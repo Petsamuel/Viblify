@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unicode Text Converter</title>
+    <link rel="stylesheet" href="popup.css" />
+
+    <style>
+      @font-face {
+        font-family: "DMSans";
+        src: url("./assets/DMSans.ttf") format("truetype");
+
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Montserrat";
+        src: url("./assets/Montserrat.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 p-4 max-w-2xl mx-auto" style="font-family: 'DMSans'">
+    <div class="space-y-4">
+      <!-- Header -->
+      <div class="text-center space-y-2">
+        <h1 class="text-3xl font-bold font-DmSans">Text Converter</h1>
+        <p class="text-gray-500 text-sm" style="font-family: Montserrat">
+          Transform your text into beautiful Unicode styles
+        </p>
+      </div>
+
+      <!-- Card Container -->
+      <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+        <!-- Input Field -->
+        <div class="space-y-2">
+          <label for="input" class="block font-medium text-sm">Your text</label>
+          <textarea
+            id="input"
+            placeholder="Type or paste your text here..."
+            class="w-full p-2 border rounded-md h-20 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Style Buttons -->
+        <div class="space-y-4 w-full">
+          <label class="block font-medium text-sm">Select style</label>
+          <div class="w-full" id="style-buttons">
+            <select
+              name="select-font"
+              id="style-select"
+              class="w-full p-2 border rounded-md"
+            >
+              <option value="">Select Style</option>
+              <option value="bold">Bold</option>
+              <option value="italic">Italic</option>
+              <option value="script">Underline</option>
+              <option value="monospace">Strikethrough</option>
+              <option value="boldItalic">Bold Italic</option>
+              <option value="fraktur">Fraktur</option>
+              <option value="doubleStruck">DoubleStruck</option>
+              <option value="smallCaps">SmallCaps</option>
+              <option value="upsideDown">UpsideDown</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="space-y-2">
+          <label class="block font-medium text-sm">Preview</label>
+          <div class="p-4 min-h-[100px] bg-gray-100 rounded-md" id="preview">
+            <p class="break-words text-gray-400">
+              Your converted text will appear here
+            </p>
+          </div>
+        </div>
+
+        <!-- Copy Button -->
+        <button
+          id="copy-button"
+          class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 font-[Montserrat]"
+          disabled
+        >
+          Copy to Clipboard
+        </button>
+      </div>
+
+      <!-- Footer Note -->
+      <p class="text-center text-sm text-gray-500">
+        Note: Some platforms may have limited Unicode support
+      </p>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@font-face {
+  font-family: "DMSans";
+  src: url("./DMSans.ttf") format("truetype");
+
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./Montserrat.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
