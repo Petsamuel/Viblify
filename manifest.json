@@ -1,17 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Bold Text Anywhere",
+  "name": "Vibe",
   "version": "1.0",
-  "description": "Easily bolden text on LinkedIn, X, and other platforms!",
+  "description": "Transform Your Text with One Click, Easily bolden text on LinkedIn, X, and other platforms!",
   "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "16": "favicon.png"
   },
   "permissions": ["activeTab", "scripting"],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon16.png"
+    "default_icon": "favicon.png"
   },
   "background": {
     "service_worker": "background.js"
@@ -20,6 +18,11 @@
     {
       "resources": ["assets/*.ttf"],
       "matches": ["<all_urls>"]
+    },
+    {
+      "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+      }
     }
   ]
 }
