@@ -65,7 +65,7 @@
         </p>
       </div>
 
-      <div class="flex justify-center items-center">
+      <div class="mx-4">
         <!-- Card Container -->
         <div
           class="p-6 space-y-6 bg-zinc-900 border-zinc-900 shadow-lg rounded-lg relative"
@@ -116,88 +116,122 @@
                 >
                   𝙼
                 </button>
+                <button
+                  data-cmd="fraktur"
+                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
+                >
+                  𝔉
+                </button>
+                <button
+                  data-cmd="doubleStruck"
+                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
+                >
+                  𝕊
+                </button>
               </div>
 
               <!-- Editor Content -->
               <div
                 id="editor"
                 contenteditable="true"
-                class="w-full p-4 prose prose-sm max-w-none focus:outline-none h-[15rem] scroll overflow-y-auto"
+                class="w-full p-4 prose prose-sm max-w-none focus:outline-none h-[15rem] scroll overflow-y-auto font-[DMSans"
               ></div>
             </div>
           </div>
           <!-- Sticky Note Buttons -->
 
           <!-- Footer Note -->
-          <p class="text-center text-sm text-gray-500 font-mono tracking-tight">
+          <p
+            class="text-center text-xs lg:text-sm text-gray-500 font-mono tracking-tight"
+          >
             Note: Some platforms may have limited Unicode support <br />
             <a
               href="https://github.com/bieefilled"
               class="text-green-400 hover:underline"
             >
-              &copy; <span class="text-xs"> MIT 2025 Vibe</span></a
+              &copy; <span class="text-xs"> MIT 2025 Viblify</span></a
             >
           </p>
         </div>
 
-        <div class="relative">
-          <button
-            id="sticky-copy"
-            class="absolute right-[25.9rem] top-[30%] w-10 h-24 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 bg-zinc-900 text-zinc-400 rounded-r-md hover:w-11 z-10 group"
+        <button
+          id="sticky-copy"
+          class="absolute right-[-0rem] md:right-[27.9rem] top-[30%] w-10 h-24 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 bg-zinc-900 text-zinc-400 rounded-md hover:w-11 z-10 group"
+        >
+          <svg
+            class="w-6 h-6 rotate-90"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              class="w-6 h-6 rotate-90"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-              />
-            </svg>
-            <span class="sr-only">Copy</span>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+            />
+          </svg>
+          <span class="sr-only">Copy</span>
 
-            <!-- Tooltip -->
-            <span
-              class="absolute top-1/2 -left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
-            >
-              Copy
-            </span>
-          </button>
-
-          <button
-            id="sticky-save"
-            class="absolute right-[25.9rem] top-[calc(30%+7.5rem)] w-10 h-24 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 bg-zinc-900 text-zinc-400 rounded-r-md hover:w-11 z-10 group"
+          <!-- Tooltip -->
+          <span
+            class="absolute top-1/2 lg:-left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
           >
-            <svg
-              class="w-6 h-6 rotate-90"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-              />
-            </svg>
-            <span class="sr-only">Save</span>
+            Copy
+          </span>
+        </button>
 
-            <!-- Tooltip -->
-            <p
-              class="absolute top-1/2 -left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
-            >
-              Save
-            </p>
-          </button>
-        </div>
+        <button
+          id="sticky-save"
+          class="absolute right-[-0rem] md:right-[27.9rem] top-[calc(30%+7.5rem)] w-10 h-24 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 bg-zinc-900 text-zinc-400 hover:w-11 z-10 group rounded-md"
+        >
+          <svg
+            class="w-6 h-6 rotate-90"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+            />
+          </svg>
+          <span class="sr-only">Save</span>
+
+          <!-- Tooltip -->
+          <p
+            class="absolute top-1/2 lg:-left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
+          >
+            Save
+          </p>
+        </button>
       </div>
     </div>
-
+    <!-- Unicode Suggestion Popup -->
+<div id="unicode-suggestion" class="hidden fixed z-[9999]">
+  <!-- Trigger button -->
+  <button class="suggestion-trigger w-9 h-9 rounded-full bg-green-500/90 text-white flex items-center justify-center border-none cursor-pointer shadow-md animate-pulse">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+    </svg>
+  </button>
+  
+  <!-- Popup content -->
+  <div class="suggestion-popup hidden absolute top-0 left-[45px] w-80 bg-zinc-800 border border-zinc-600 rounded-md shadow-lg text-zinc-100">
+    <div class="suggestion-header p-3 border-b border-zinc-600">
+      <h4 class="text-sm font-semibold mb-1.5 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+        </svg>
+        Unicode Style Suggestions
+      </h4>
+      <p class="text-xs text-zinc-400">Apply a unicode style to your text</p>
+    </div>
+    <div class="suggestion-options max-h-56 overflow-auto p-2"></div>
+  </div>
+</div>
     <!-- JavaScript -->
     <script src="popup.js"></script>
     <script src="./assets/unicode.js"></script>
