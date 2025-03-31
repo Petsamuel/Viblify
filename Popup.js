@@ -33,7 +33,7 @@ function convertText(text, style) {
     })
     .join("");
 }
-// Add this right after your existing convertText function
+
 const styles = [
   { id: "bold", name: "Bold", map: window.UnicodeStyler.styleMaps.bold },
   { id: "italic", name: "Italic", map: window.UnicodeStyler.styleMaps.italic },
