@@ -482,6 +482,5 @@
   // Expose to global scope under one namespace
   window.UnicodeStyler = {
     styleMaps,
-    sampleText,
   };
 })();

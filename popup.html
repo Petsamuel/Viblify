@@ -5,48 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vibe</title>
     <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="assets/input.css" />
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
-
-    <style>
-      @font-face {
-        font-family: "DMSans";
-        src: url("./assets/DMSans.ttf") format("truetype");
-        font-display: swap;
-      }
-
-      @font-face {
-        font-family: "Montserrat";
-        src: url("./assets/Montserrat.ttf") format("truetype");
-        font-style: normal;
-        font-weight: 700;
-        font-display: swap;
-      }
-      .scroll::-webkit-scrollbar {
-        width: 4px;
-      }
-      .scroll::-webkit-scrollbar-thumb {
-        background-color: #3f3f46;
-        border-radius: 4px;
-      }
-      /* Blinking cursor */
-      #editor:empty:after {
-        content: "|";
-        animation: blink 1s step-end infinite;
-      }
-      .brand:empty:after {
-        content: "_";
-        animation: blink 1s step-end infinite;
-      }
-      @keyframes blink {
-        from,
-        to {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0;
-        }
-      }
-    </style>
+    <!-- JavaScript -->
+    <script defer src="unicode.js"></script>
+    <script defer src="popup.js"></script>
+    <script defer src="content.js"></script>
   </head>
   <body
     class="bg-black p-4 md:mx-auto w-[30rem]"
@@ -90,44 +54,60 @@
               class="border border-zinc-700 rounded-md bg-white shadow-md h-[18rem] relative"
             >
               <div
-                class="flex flex-wrap gap-1 p-1.5 bg-zinc-700 sticky top-0 toolbar"
+                class="flex gap-2 p-1.5 bg-zinc-700 sticky top-0 items-center justify-between"
               >
-                <button
-                  data-cmd="bold"
-                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
+                <select
+                  id="style-selector"
+                  class="bg-zinc-800 text-zinc-300 text-xs rounded p-2 border border-zinc-900 focus:outline-none focus:ring-1 focus:ring-green-400"
                 >
-                  𝗕
-                </button>
-                <button
-                  data-cmd="italic"
-                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
-                >
-                  𝘪
-                </button>
-                <button
-                  data-cmd="script"
-                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
-                >
-                  𝓢
-                </button>
-                <button
-                  data-cmd="monospace"
-                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
-                >
-                  𝙼
-                </button>
-                <button
-                  data-cmd="fraktur"
-                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
-                >
-                  𝔉
-                </button>
-                <button
-                  data-cmd="doubleStruck"
-                  class="p-1.5 min-w-[32px] rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer"
-                >
-                  𝕊
-                </button>
+                  <option value="" selected disabled>Select Style...</option>
+                 
+                  <option value="bold">Bold</option>
+                  <option value="italic">Italic</option>
+                  <option value="script">Script</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="boldItalic">Bold Italic</option>
+                  <option value="fraktur">Fraktur</option>
+                  <option value="doubleStruck">Double Struck</option>
+                  <option value="smallCaps">Small Caps</option>
+                  <option value="upsideDown">Upside Down</option>
+                </select>
+                <div>
+                  <!-- Undo/Redo Buttons -->
+                  <button
+                    id="undo-btn"
+                    class="p-1.5 rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer disabled:opacity-50"
+                    title="Undo"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      class="w-4 h-4"
+                    >
+                      <path d="M0 0h24v24H0z" fill="none" />
+                      <path
+                        d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    id="redo-btn"
+                    class="p-1.5 rounded hover:bg-zinc-900 cursor-pointer disabled:opacity-50"
+                    title="Redo"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      class="w-4 h-4"
+                    >
+                      <path d="M0 0h24v24H0z" fill="none" />
+                      <path
+                        d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <!-- Editor Content -->
@@ -209,31 +189,5 @@
         </button>
       </div>
     </div>
-    <!-- Unicode Suggestion Popup -->
-<div id="unicode-suggestion" class="hidden fixed z-[9999]">
-  <!-- Trigger button -->
-  <button class="suggestion-trigger w-9 h-9 rounded-full bg-green-500/90 text-white flex items-center justify-center border-none cursor-pointer shadow-md animate-pulse">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-    </svg>
-  </button>
-  
-  <!-- Popup content -->
-  <div class="suggestion-popup hidden absolute top-0 left-[45px] w-80 bg-zinc-800 border border-zinc-600 rounded-md shadow-lg text-zinc-100">
-    <div class="suggestion-header p-3 border-b border-zinc-600">
-      <h4 class="text-sm font-semibold mb-1.5 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-        </svg>
-        Unicode Style Suggestions
-      </h4>
-      <p class="text-xs text-zinc-400">Apply a unicode style to your text</p>
-    </div>
-    <div class="suggestion-options max-h-56 overflow-auto p-2"></div>
-  </div>
-</div>
-    <!-- JavaScript -->
-    <script src="popup.js"></script>
-    <script src="./assets/unicode.js"></script>
   </body>
 </html>

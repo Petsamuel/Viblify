@@ -13,3 +13,85 @@
   font-weight: 700;
   font-display: swap;
 }
+
+.scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  background-color: #3f3f46;
+  border-radius: 4px;
+}
+/* Blinking cursor */
+#editor:empty:after {
+  content: "|";
+  animation: blink 1s step-end infinite;
+}
+.brand:empty:after {
+  content: "_";
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  from,
+  to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+/* Add to your existing style tag */
+#unicode-suggestion {
+  transition: all 0.2s ease;
+}
+
+.suggestion-popup {
+  transform-origin: bottom left;
+  animation: scaleIn 0.15s ease-out;
+}
+
+.suggestion-trigger {
+  will-change: transform;
+}
+.animate-scaleIn {
+  animation: scaleIn 0.15s ease-out;
+}
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+.unicode-popup {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
+  width: 16rem; /* 64px * 4 */
+  background-color: #27272a; /* Equivalent to bg-zinc-800 */
+  border: 1px solid #52525b; /* Equivalent to border-zinc-600 */
+  border-radius: 0.5rem; /* Rounded-lg */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow-xl */
+  color: #f4f4f5; /* Equivalent to text-zinc-100 */
+  z-index: 9999;
+  
+  transform: scale(0.95);
+  opacity: 0;
+  transform-origin: bottom right;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.unicode-popup.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
