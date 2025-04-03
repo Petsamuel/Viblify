@@ -26,10 +26,10 @@ let isApplyingStyle = false;
  */
 function convertText(text, style) {
   // Fail-safe if unicode.js isn't loaded
-  if (!window.UnicodeStyler || !window.UnicodeStyler.styleMaps) {
-    console.error("Unicode maps not loaded!");
-    return text;
-  }
+  // if (!window.UnicodeStyler || !window.UnicodeStyler.styleMaps) {
+  //   console.error("Unicode maps not loaded!");
+  //   return text;
+  // }
 
   const { styleMaps } = window.UnicodeStyler;
   if (!text || !styleMaps[style]) return text;
@@ -72,11 +72,12 @@ function applyStyle(style) {
     const styledText = convertText(selectedText, style);
     range.deleteContents();
     range.insertNode(document.createTextNode(styledText));
-  } else {
-    // Insert sample text at cursor
-    const sample = window.UnicodeStyler.sampleText[style] || "";
-    range.insertNode(document.createTextNode(sample));
-  }
+  } 
+  // else {
+  //   // Insert sample text at cursor
+  //   const sample = window.UnicodeStyler.sampleText[style] || "";
+  //   range.insertNode(document.createTextNode(sample));
+  // }
   isApplyingStyle = false;
   saveState(); // Save state after applying style
   updateUndoRedoButtons();

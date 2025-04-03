@@ -24,6 +24,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["unicode.js", "content.js"],
+      "css": ["popup.css", "/assets/input.css"],
       "run_at": "document_end",
       "all_frames": true
     }
