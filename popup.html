@@ -6,14 +6,14 @@
     <title>Vibe</title>
     <link rel="stylesheet" href="popup.css" />
     <link rel="stylesheet" href="assets/input.css" />
-    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="bg-icon.png" type="image/x-icon" />
     <!-- JavaScript -->
     <script defer src="unicode.js"></script>
     <script defer src="popup.js"></script>
     <script defer src="content.js"></script>
   </head>
   <body
-    class="bg-black p-4 md:mx-auto w-[30rem]"
+    class="p-4 mx-auto w-[35rem] bg-zinc-900 rounded-lg"
     style="font-family: 'DMSans', Montserrat"
   >
     <div class="space-y-4">
@@ -22,18 +22,29 @@
         <h1
           class="text-3xl font-bold tracking-tight text-green-400 font-mono flex justify-center"
         >
-          ><span class="brand"></span>Vibe
+          ><span class="brand"></span>Vib<span class=""
+            ><svg
+              class="w-8 h-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 22a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+              /></svg
+          ></span>
         </h1>
         <p class="text-zinc-400 text-xs font-mono">
           Transform your text into beautiful Unicode styles
         </p>
       </div>
 
-      <div class="mx-4">
+      <div class="mx-2">
         <!-- Card Container -->
-        <div
-          class="p-6 space-y-6 bg-zinc-900 border-zinc-900 shadow-lg rounded-lg relative"
-        >
+        <div class="p-6 space-y-6 relative">
           <div
             class="flex items-center px-4 py-2 bg-zinc-900 border-b border-zinc-700 justify-between"
           >
@@ -61,8 +72,8 @@
                   class="bg-zinc-800 text-zinc-300 text-xs rounded p-2 border border-zinc-900 focus:outline-none focus:ring-1 focus:ring-green-400"
                 >
                   <option value="" selected disabled>Select Style...</option>
-                 
-                  <option value="bold" >Bold</option>
+
+                  <option value="bold">Bold</option>
                   <option value="italic">Italic</option>
                   <option value="script">Script</option>
                   <option value="monospace">Monospace</option>
@@ -72,7 +83,7 @@
                   <option value="smallCaps">Small Caps</option>
                   <option value="upsideDown">Upside Down</option>
                 </select>
-                <div>
+                <div class="flex gap-1.5">
                   <!-- Undo/Redo Buttons -->
                   <button
                     id="undo-btn"
@@ -83,6 +94,7 @@
                       xmlns="http://www.w3.org/2000/svg"
                       height="24"
                       viewBox="0 0 24 24"
+                       stroke="currentColor"
                       class="w-4 h-4"
                     >
                       <path d="M0 0h24v24H0z" fill="none" />
@@ -90,11 +102,18 @@
                         d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
                       />
                     </svg>
+                    <span
+                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
+                    >
+                      Undo
+                    </span>
                   </button>
                   <button
                     id="redo-btn"
-                    class="p-1.5 rounded hover:bg-zinc-900 cursor-pointer disabled:opacity-50"
+                    class="p-1.5 rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer disabled:opacity-50"
                     title="Redo"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -106,6 +125,64 @@
                         d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
                       />
                     </svg>
+                    <span
+                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
+                    >
+                      Redo
+                    </span>
+                  </button>
+                  <button
+                    id="sticky-copy"
+                    class="p-1.5 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 text-zinc-400 rounded-md hover:bg-zinc-900 z-10 group"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                      />
+                    </svg>
+                    <span class="sr-only">Copy</span>
+
+                    <!-- Tooltip -->
+                    <span
+                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
+                    >
+                      Copy
+                    </span>
+                  </button>
+
+                  <button
+                    id="sticky-save"
+                    class="p-1.5 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 text-zinc-400 hover:bg-zinc-900 z-10 group rounded-md"
+                  >
+                    <svg
+                      class="w-4 h-4 rotate-90"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                      />
+                    </svg>
+                    <span class="sr-only">Save</span>
+
+                    <!-- Tooltip -->
+                    <p
+                      class="absolute top-1/2 lg:-left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
+                    >
+                      Save
+                    </p>
                   </button>
                 </div>
               </div>
@@ -133,60 +210,6 @@
             >
           </p>
         </div>
-
-        <button
-          id="sticky-copy"
-          class="absolute right-[-0rem] md:right-[27.9rem] top-[30%] w-10 h-24 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 bg-zinc-900 text-zinc-400 rounded-md hover:w-11 z-10 group"
-        >
-          <svg
-            class="w-6 h-6 rotate-90"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-            />
-          </svg>
-          <span class="sr-only">Copy</span>
-
-          <!-- Tooltip -->
-          <span
-            class="absolute top-1/2 lg:-left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
-          >
-            Copy
-          </span>
-        </button>
-
-        <button
-          id="sticky-save"
-          class="absolute right-[-0rem] md:right-[27.9rem] top-[calc(30%+7.5rem)] w-10 h-24 [writing-mode:vertical-rl] rotate-180 flex items-center justify-center font-Montserrat font-bold cursor-pointer transition-all duration-200 bg-zinc-900 text-zinc-400 hover:w-11 z-10 group rounded-md"
-        >
-          <svg
-            class="w-6 h-6 rotate-90"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-            />
-          </svg>
-          <span class="sr-only">Save</span>
-
-          <!-- Tooltip -->
-          <p
-            class="absolute top-1/2 lg:-left-5 font-mono bg-zinc-900 text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
-          >
-            Save
-          </p>
-        </button>
       </div>
     </div>
   </body>

@@ -9,7 +9,7 @@
   "permissions": ["activeTab", "storage", "clipboardWrite"],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "favicon.png"
+    "default_icon": "bg-icon.png"
   },
   "background": {
     "service_worker": "background.js"

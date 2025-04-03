@@ -17,6 +17,75 @@ function initUnicodeSuggestions() {
     },
   ];
 
+  // Inject custom CSS for consistent styling
+  const styleSheet = document.createElement("style");
+  styleSheet.textContent = `
+    .unicode-suggestion-btn {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: rgba(34, 197, 94, 0.9); /* green-500/90 */
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(74, 222, 128, 0.3); /* green-400/30 */
+      transition: transform 0.2s;
+      z-index: 9999;
+    }
+    .unicode-suggestion-btn:hover {
+      transform: scale(1.1);
+    }
+    .unicode-suggestion-btn.hidden {
+      display: none;
+    }
+    .unicode-suggestion-popup {
+      width: 256px;
+      background-color: #27272a; /* zinc-800 */
+      border: 1px solid #4b5563; /* zinc-600 */
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      color: #f4f4f5; /* zinc-100 */
+      z-index: 10000;
+      transition: all 0.2s ease-out;
+    }
+    .unicode-suggestion-popup.hidden {
+      display: none;
+    }
+    .unicode-suggestion-popup .suggestion-options {
+      max-height: 256px;
+      overflow-y: auto;
+      padding: 8px;
+      background-color: #18181b; /* zinc-900 */
+    }
+    .unicode-suggestion-popup .suggestion-options button {
+      width: 100%;
+      text-align: left;
+      padding: 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .unicode-suggestion-popup .suggestion-options button:hover {
+      background-color: #3f3f46; /* zinc-700 */
+    }
+    .unicode-suggestion-popup .header {
+      padding: 12px;
+      border-bottom: 1px solid #374151; /* zinc-700 */
+      background-color: #18181b; /* zinc-900 */
+    }
+  `;
+  document.head.appendChild(styleSheet);
+
   function convertText(text, style) {
     const styleMap = window.UnicodeStyler?.styleMaps[style];
     if (!styleMap) {
@@ -41,6 +110,47 @@ function initUnicodeSuggestions() {
       return;
     }
 
+    console.debug("applyStyle: Targeting element", input);
+
+    // Twitter-specific handling
+    const twitterEditor =
+      input.closest('[data-testid="tweetTextarea_0"]') ||
+      input.querySelector('[data-testid="tweetTextarea_0"]');
+    if (
+      twitterEditor &&
+      twitterEditor.getAttribute("contenteditable") === "true"
+    ) {
+      console.debug("applyStyle: Found Twitter editor", twitterEditor);
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        if (!range.collapsed) {
+          const selectedText = range.toString();
+          range.deleteContents();
+          range.insertNode(
+            document.createTextNode(convertText(selectedText, style))
+          );
+        } else {
+          // No selection: Replace all text in the editor
+          const textNode =
+            twitterEditor.querySelector('[data-text="true"]') || twitterEditor;
+          const allText = textNode.textContent || "";
+          textNode.textContent = convertText(allText, style);
+          // Reset cursor to end
+          const newRange = document.createRange();
+          newRange.selectNodeContents(twitterEditor);
+          newRange.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        }
+        twitterEditor.dispatchEvent(new Event("input", { bubbles: true }));
+        return;
+      } else {
+        console.warn("applyStyle: No selection available for Twitter");
+      }
+    }
+
+    // Standard INPUT or TEXTAREA
     if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
       const start = input.selectionStart;
       const end = input.selectionEnd;
@@ -56,7 +166,9 @@ function initUnicodeSuggestions() {
           text.substring(end);
       }
       input.dispatchEvent(new Event("input", { bubbles: true }));
-    } else if (input.getAttribute("contenteditable") === "true") {
+    }
+    // Generic contenteditable
+    else if (input.getAttribute("contenteditable") === "true") {
       const sel = window.getSelection();
       if (sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
@@ -78,13 +190,7 @@ function initUnicodeSuggestions() {
 
   function createSuggestionButton() {
     const btn = document.createElement("button");
-    btn.className = `
-      absolute right-2 bottom-2 w-7 h-7 rounded-full
-      bg-green-500/90 text-white flex items-center
-      justify-center shadow-md hover:scale-110
-      transition-all duration-200 z-[9999] hidden
-      border border-green-400/30
-    `;
+    btn.className = "unicode-suggestion-btn hidden";
     btn.innerHTML = `
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
@@ -95,18 +201,17 @@ function initUnicodeSuggestions() {
 
   function createSuggestionPopup() {
     const popup = document.createElement("div");
-    popup.className =
-      "unicode-suggestion-popup hidden w-64 bg-zinc-800 border border-zinc-600 rounded-lg shadow-lg text-zinc-200 z-[10000] transition-all duration-200 ease-out";
+    popup.className = "unicode-suggestion-popup hidden";
     popup.innerHTML = `
-      <div class="p-3 border-b border-zinc-700 bg-zinc-900">
+      <div class="header">
         <div class="flex items-center gap-2 text-sm font-medium">
           <span>Suggestion Styles</span>
         </div>
       </div>
-      <div class="suggestion-options max-h-64 overflow-y-auto p-2 bg-zinc-900">
+      <div class="suggestion-options">
         ${STYLES.map(
           (style) => `
-            <button class="w-full text-left p-2 rounded flex items-center gap-2 hover:bg-zinc-700" data-cmd="${style.cmd}">
+            <button data-cmd="${style.cmd}">
               <span class="w-6">${style.char}</span> ${style.name}
             </button>
           `
@@ -142,6 +247,7 @@ function initUnicodeSuggestions() {
       element.classList.contains("public-DraftEditor-content") ||
       element.classList.contains("notranslate") ||
       element.getAttribute("role") === "textbox" ||
+      element.getAttribute("data-testid") === "tweetTextarea_0" ||
       element.getAttribute("aria-label")?.toLowerCase().includes("tweet") ||
       // LinkedIn
       element.classList.contains("ql-editor") ||
@@ -176,16 +282,21 @@ function initUnicodeSuggestions() {
 
   function findDeepEditor(element) {
     if (!element || !(element instanceof HTMLElement)) {
-      console.debug("findDeepEditor: Invalid element", element);
+      // console.debug("findDeepEditor: Invalid element", element);
       return null;
     }
 
-    // Twitter
-    if (element.matches('[data-testid="tweetTextarea_0"]')) return element;
+    // Twitter - Target the contenteditable div directly
     const twitterEditor =
-      element.querySelector('[data-text="true"]') ||
-      element.closest(".public-DraftEditor-content");
-    if (twitterEditor) return twitterEditor;
+      element.closest('[data-testid="tweetTextarea_0"]') ||
+      element.querySelector('[data-testid="tweetTextarea_0"]');
+    if (
+      twitterEditor &&
+      twitterEditor.getAttribute("contenteditable") === "true"
+    ) {
+      // console.debug("findDeepEditor: Found Twitter editor", twitterEditor);
+      return twitterEditor;
+    }
 
     // LinkedIn
     const linkedinEditor =
@@ -217,10 +328,7 @@ function initUnicodeSuggestions() {
 
     const targetInput = findDeepEditor(input);
     if (!targetInput) {
-      console.debug(
-        "setupInputElement: No valid target input found for",
-        input
-      );
+      // console.debug("setupInputElement: No valid target input found for", input);
       return;
     }
 
@@ -279,7 +387,6 @@ function initUnicodeSuggestions() {
       }
     });
 
-    // Outside click handler
     document.addEventListener("click", (e) => {
       if (
         !popup.classList.contains("hidden") &&
@@ -298,7 +405,7 @@ function initUnicodeSuggestions() {
         e.preventDefault();
         const cmd = option.getAttribute("data-cmd");
         if (cmd) {
-          console.debug("Applying style", cmd, "to", targetInput);
+          // console.debug("Applying style", cmd, "to", targetInput);
           applyStyle(targetInput, cmd);
         }
         popup.classList.add("hidden");
@@ -340,8 +447,9 @@ function initUnicodeSuggestions() {
               .querySelectorAll(
                 "input, textarea, [contenteditable='true'], [role='textbox'], " +
                   ".ql-editor, .msg-form__contenteditable, .public-DraftEditor-content, " +
-                  ".notranslate, [data-text='true'], [aria-label*='tweet' i], " +
-                  "[aria-label*='post' i], [aria-label*='comment' i], [placeholder*='comment' i]"
+                  ".notranslate, [data-text='true'], [data-testid='tweetTextarea_0'], " +
+                  "[aria-label*='tweet' i], [aria-label*='post' i], [aria-label*='comment' i], " +
+                  "[placeholder*='comment' i]"
               )
               .forEach(setupInputElement);
           });
@@ -358,8 +466,9 @@ function initUnicodeSuggestions() {
       .querySelectorAll(
         "input, textarea, [contenteditable='true'], [role='textbox'], " +
           ".ql-editor, .msg-form__contenteditable, .public-DraftEditor-content, " +
-          ".notranslate, [data-text='true'], [aria-label*='tweet' i], " +
-          "[aria-label*='post' i], [aria-label*='comment' i], [placeholder*='comment' i]"
+          ".notranslate, [data-text='true'], [data-testid='tweetTextarea_0'], " +
+          "[aria-label*='tweet' i], [aria-label*='post' i], [aria-label*='comment' i], " +
+          "[placeholder*='comment' i]"
       )
       .forEach(setupInputElement);
   }
@@ -369,6 +478,7 @@ function initUnicodeSuggestions() {
       .querySelectorAll(
         ".ql-editor, .msg-form__contenteditable, [contenteditable='true'], " +
           ".public-DraftEditor-content, .notranslate, [role='textbox'], " +
+          "[data-testid='tweetTextarea_0'], [data-text='true'], " +
           "[aria-label*='tweet' i], [aria-label*='post' i], [aria-label*='comment' i], " +
           "[placeholder*='comment' i]"
       )
