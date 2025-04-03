@@ -13,7 +13,7 @@
     <script defer src="content.js"></script>
   </head>
   <body
-    class="p-4 mx-auto w-[35rem] bg-zinc-900 rounded-lg"
+    class="p-3 mx-auto w-[35rem] bg-zinc-900 rounded-lg"
     style="font-family: 'DMSans', Montserrat"
   >
     <div class="space-y-4">
@@ -42,7 +42,7 @@
         </p>
       </div>
 
-      <div class="mx-2">
+      <div class="mx-1">
         <!-- Card Container -->
         <div class="p-6 space-y-6 relative">
           <div
@@ -83,18 +83,16 @@
                   <option value="smallCaps">Small Caps</option>
                   <option value="upsideDown">Upside Down</option>
                 </select>
-                <div class="flex gap-1.5">
+                <div class="flex gap-0.5 items-center justify-center">
                   <!-- Undo/Redo Buttons -->
                   <button
                     id="undo-btn"
-                    class="p-1.5 rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer disabled:opacity-50"
+                    class="p-1.5 rounded hover:bg-zinc-900 cursor-pointer disabled:opacity-50"
                     title="Undo"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      height="24"
                       viewBox="0 0 24 24"
-                       stroke="currentColor"
                       class="w-4 h-4"
                     >
                       <path d="M0 0h24v24H0z" fill="none" />
@@ -102,17 +100,11 @@
                         d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
                       />
                     </svg>
-                    <span
-                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
-                    >
-                      Undo
-                    </span>
                   </button>
                   <button
                     id="redo-btn"
                     class="p-1.5 rounded hover:bg-zinc-900 text-zinc-400 cursor-pointer disabled:opacity-50"
                     title="Redo"
-                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <svg
@@ -125,11 +117,6 @@
                         d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
                       />
                     </svg>
-                    <span
-                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
-                    >
-                      Redo
-                    </span>
                   </button>
                   <button
                     id="sticky-copy"
@@ -152,7 +139,7 @@
 
                     <!-- Tooltip -->
                     <span
-                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90"
+                      class="absolute top-1/2 lg:-left-5 font-mono text-green-400 text-xs font-semibold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity [writing-mode:vertical-rl] rotate-90 bg-zinc-900"
                     >
                       Copy
                     </span>
