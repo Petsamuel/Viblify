@@ -1,35 +1,39 @@
 {
   "manifest_version": 3,
-  "name": "Vibe",
-  "version": "1.0",
-  "description": "Transform Your Text with One Click, Easily bolden text on LinkedIn, X, and other platforms!",
+  "name": "Viblify",
+  "version": "0.1.0",
+  "description": "Transform plain text into Unicode styles (bold, italic, script, etc.) right where you type.",
   "icons": {
-    "16": "favicon.png"
+    "16": "icons/bg-icon.png",
+    "48": "icons/bg-icon.png",
+    "128": "icons/bg-icon.png"
   },
-  "permissions": ["activeTab", "storage", "clipboardWrite"],
+  "permissions": ["activeTab", "storage"],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "bg-icon.png"
+    "default_icon": "icons/bg-icon.png"
   },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["assets/*"],
-      "matches": ["<all_urls>"]
-    }
-  ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["unicode.js", "content.js"],
-      "css": ["popup.css", "/assets/input.css"],
+      "css": ["assets/input.css", "popup.css"],
       "run_at": "document_end",
       "all_frames": true
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "popup.css",
+        "Popup.js",
+        "assets/DMSans.ttf",
+        "assets/Montserrat.ttf"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

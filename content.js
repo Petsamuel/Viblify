@@ -4,20 +4,45 @@ function initUnicodeSuggestions() {
   const IDLE_TIMEOUT = 5000;
 
   const STYLES = [
-    { id: "bold", name: "Bold", char: "𝗕", cmd: "bold" },
-    { id: "italic", name: "Italic", char: "𝘪", cmd: "italic" },
-    { id: "script", name: "Script", char: "𝓢", cmd: "script" },
-    { id: "monospace", name: "Monospace", char: "𝙼", cmd: "monospace" },
-    { id: "fraktur", name: "Fraktur", char: "𝔉", cmd: "fraktur" },
+    { id: "bold", name: "Bold", char: "𝗕", cmd: "bold", shortcut: "Ctrl+B" },
+    {
+      id: "italic",
+      name: "Italic",
+      char: "𝘪",
+      cmd: "italic",
+      shortcut: "Ctrl+I",
+    },
+    {
+      id: "script",
+      name: "Script",
+      char: "𝓢",
+      cmd: "script",
+      shortcut: "Ctrl+S",
+    },
+    {
+      id: "monospace",
+      name: "Monospace",
+      char: "𝙼",
+      cmd: "monospace",
+      shortcut: "Ctrl+M",
+    },
+    {
+      id: "fraktur",
+      name: "Fraktur",
+      char: "𝔉",
+      cmd: "fraktur",
+      shortcut: "Ctrl+F",
+    },
     {
       id: "doubleStruck",
       name: "Double Struck",
       char: "𝕊",
       cmd: "doubleStruck",
+      shortcut: "Ctrl+D",
     },
   ];
 
-  // Inject custom CSS for consistent styling
+  // Inject custom CSS for consistent styling (unchanged)
   const styleSheet = document.createElement("style");
   styleSheet.textContent = `
     .unicode-suggestion-btn {
@@ -27,13 +52,13 @@ function initUnicodeSuggestions() {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background-color: rgba(34, 197, 94, 0.9); /* green-500/90 */
+      background-color: rgba(34, 197, 94, 0.9);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(74, 222, 128, 0.3); /* green-400/30 */
+      border: 1px solid rgba(74, 222, 128, 0.3);
       transition: transform 0.2s;
       z-index: 9999;
     }
@@ -45,11 +70,11 @@ function initUnicodeSuggestions() {
     }
     .unicode-suggestion-popup {
       width: 256px;
-      background-color: #27272a; /* zinc-800 */
-      border: 1px solid #4b5563; /* zinc-600 */
+      background-color: #27272a;
+      border: 1px solid #4b5563;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      color: #f4f4f5; /* zinc-100 */
+      color: #f4f4f5;
       z-index: 10000;
       transition: all 0.2s ease-out;
     }
@@ -60,7 +85,7 @@ function initUnicodeSuggestions() {
       max-height: 256px;
       overflow-y: auto;
       padding: 8px;
-      background-color: #18181b; /* zinc-900 */
+      background-color: #18181b;
     }
     .unicode-suggestion-popup .suggestion-options button {
       width: 100%;
@@ -76,12 +101,12 @@ function initUnicodeSuggestions() {
       cursor: pointer;
     }
     .unicode-suggestion-popup .suggestion-options button:hover {
-      background-color: #3f3f46; /* zinc-700 */
+      background-color: #3f3f46;
     }
     .unicode-suggestion-popup .header {
       padding: 12px;
-      border-bottom: 1px solid #374151; /* zinc-700 */
-      background-color: #18181b; /* zinc-900 */
+      border-bottom: 1px solid #374151;
+      background-color: #18181b;
     }
   `;
   document.head.appendChild(styleSheet);
@@ -106,86 +131,129 @@ function initUnicodeSuggestions() {
 
   function applyStyle(input, style) {
     if (!input || !(input instanceof HTMLElement)) {
-      console.error("applyStyle: Invalid input", input);
+      console.error("Invalid input element");
       return;
     }
 
-    console.debug("applyStyle: Targeting element", input);
-
-    // Twitter-specific handling
-    const twitterEditor =
-      input.closest('[data-testid="tweetTextarea_0"]') ||
-      input.querySelector('[data-testid="tweetTextarea_0"]');
-    if (
-      twitterEditor &&
-      twitterEditor.getAttribute("contenteditable") === "true"
-    ) {
-      console.debug("applyStyle: Found Twitter editor", twitterEditor);
-      const sel = window.getSelection();
-      if (sel.rangeCount > 0) {
-        const range = sel.getRangeAt(0);
-        if (!range.collapsed) {
-          const selectedText = range.toString();
-          range.deleteContents();
-          range.insertNode(
-            document.createTextNode(convertText(selectedText, style))
-          );
-        } else {
-          // No selection: Replace all text in the editor
-          const textNode =
-            twitterEditor.querySelector('[data-text="true"]') || twitterEditor;
-          const allText = textNode.textContent || "";
-          textNode.textContent = convertText(allText, style);
-          // Reset cursor to end
-          const newRange = document.createRange();
-          newRange.selectNodeContents(twitterEditor);
-          newRange.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(newRange);
-        }
-        twitterEditor.dispatchEvent(new Event("input", { bubbles: true }));
-        return;
-      } else {
-        console.warn("applyStyle: No selection available for Twitter");
-      }
+    const twitterEditor = input.closest('[data-testid="tweetTextarea_0"]');
+    if (twitterEditor) {
+      applyTwitterStyle(twitterEditor, style);
+      return;
     }
 
-    // Standard INPUT or TEXTAREA
     if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
-      const start = input.selectionStart;
-      const end = input.selectionEnd;
-      const text = input.value;
+      applyStandardInputStyle(input, style);
+      return;
+    }
 
-      if (start === end) {
-        input.value = convertText(text, style);
-      } else {
-        const selectedText = text.substring(start, end);
-        input.value =
-          text.substring(0, start) +
-          convertText(selectedText, style) +
-          text.substring(end);
-      }
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+    if (input.isContentEditable) {
+      applyContentEditableStyle(input, style);
     }
-    // Generic contenteditable
-    else if (input.getAttribute("contenteditable") === "true") {
-      const sel = window.getSelection();
-      if (sel.rangeCount > 0) {
-        const range = sel.getRangeAt(0);
-        if (!range.collapsed) {
-          const selectedText = range.toString();
+  }
+
+  function applyTwitterStyle(editor, style) {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    const contentDiv = editor.querySelector('[data-contents="true"]');
+
+    if (!contentDiv) {
+      console.error("Could not find Twitter content div");
+      return;
+    }
+
+    try {
+      if (!range.collapsed) {
+        const selectedText = range.toString();
+        if (selectedText) {
+          const styledText = convertText(selectedText, style);
           range.deleteContents();
-          range.insertNode(
-            document.createTextNode(convertText(selectedText, style))
-          );
-        } else {
-          input.textContent = convertText(input.textContent || "", style);
+          range.insertNode(document.createTextNode(styledText));
+          triggerTwitterEvents(editor);
+          return;
         }
-        input.dispatchEvent(new Event("input", { bubbles: true }));
       }
-    } else {
-      console.warn("applyStyle: Unsupported input type", input);
+
+      const textNodes = getTextNodes(contentDiv);
+      textNodes.forEach((node) => {
+        node.nodeValue = convertText(node.nodeValue, style);
+      });
+
+      triggerTwitterEvents(editor);
+    } catch (error) {
+      console.error("Error applying Twitter style:", error);
     }
+  }
+
+  function getTextNodes(element) {
+    const textNodes = [];
+    const walker = document.createTreeWalker(
+      element,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+
+    let node;
+    while ((node = walker.nextNode())) {
+      textNodes.push(node);
+    }
+
+    return textNodes;
+  }
+
+  function triggerTwitterEvents(editor) {
+    const inputEvent = new InputEvent("input", {
+      bubbles: true,
+      cancelable: true,
+    });
+    editor.dispatchEvent(inputEvent);
+
+    const changeEvent = new Event("change", {
+      bubbles: true,
+      cancelable: true,
+    });
+    editor.dispatchEvent(changeEvent);
+
+    editor.blur();
+    editor.focus();
+  }
+
+  function applyStandardInputStyle(input, style) {
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+
+    if (start === end) {
+      input.value = convertText(text, style);
+    } else {
+      const selectedText = text.substring(start, end);
+      input.value =
+        text.substring(0, start) +
+        convertText(selectedText, style) +
+        text.substring(end);
+    }
+
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function applyContentEditableStyle(element, style) {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+
+    if (!range.collapsed) {
+      const selectedText = range.toString();
+      const styledText = convertText(selectedText, style);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(styledText));
+    } else {
+      element.textContent = convertText(element.textContent, style);
+    }
+
+    element.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   function createSuggestionButton() {
@@ -205,14 +273,14 @@ function initUnicodeSuggestions() {
     popup.innerHTML = `
       <div class="header">
         <div class="flex items-center gap-2 text-sm font-medium">
-          <span>Suggestion Styles</span>
+          <span>Suggestion Styles <style class="text-zinc-300 text-[11px]">(Ctrl+[Key])</style></span>
         </div>
       </div>
       <div class="suggestion-options">
         ${STYLES.map(
           (style) => `
             <button data-cmd="${style.cmd}">
-              <span class="w-6">${style.char}</span> ${style.name}
+              <span class="w-6">${style.char}</span> ${style.name} <span class="ml-2  opacity-70 text-zinc-300 text-[11px]">${style.shortcut}</span>
             </button>
           `
         ).join("")}
@@ -223,18 +291,32 @@ function initUnicodeSuggestions() {
 
   function positionPopup(popup, btn) {
     const btnRect = btn.getBoundingClientRect();
-    popup.style.position = "fixed";
-    popup.style.left = `${btnRect.right - popup.offsetWidth}px`;
-    popup.style.top = `${btnRect.top - popup.offsetHeight - 8}px`;
-
     const popupRect = popup.getBoundingClientRect();
-    if (popupRect.left < 0) popup.style.left = "0px";
-    if (popupRect.top < 0) popup.style.top = `${btnRect.bottom + 8}px`;
+
+    let top = btnRect.top - popupRect.height - 8;
+    let left = btnRect.right - popupRect.width;
+
+    if (top < 3) {
+      top = btnRect.bottom + 8;
+    }
+
+    if (left < 0) {
+      left = btnRect.left;
+    }
+
+    if (left + popupRect.width > window.innerWidth) {
+      left = window.innerWidth - popupRect.width - 8;
+    }
+
+    popup.style.position = "fixed";
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
   }
 
   function isTextInputElement(element) {
     if (!element || !(element instanceof HTMLElement)) return false;
 
+    // Only allow editable elements
     const isStandardTextInput =
       (element instanceof HTMLInputElement && element.type === "text") ||
       element instanceof HTMLTextAreaElement;
@@ -242,36 +324,58 @@ function initUnicodeSuggestions() {
     const isContenteditable =
       element.getAttribute("contenteditable") === "true";
 
+    // Specific social media editors must be editable
     const isSocialMediaEditor =
-      // Twitter
-      element.classList.contains("public-DraftEditor-content") ||
-      element.classList.contains("notranslate") ||
-      element.getAttribute("role") === "textbox" ||
-      element.getAttribute("data-testid") === "tweetTextarea_0" ||
-      element.getAttribute("aria-label")?.toLowerCase().includes("tweet") ||
-      // LinkedIn
-      element.classList.contains("ql-editor") ||
-      element.classList.contains("msg-form__contenteditable") ||
-      element
+      (element.classList.contains("public-DraftEditor-content") &&
+        element.isContentEditable) ||
+      (element.classList.contains("notranslate") &&
+        element.isContentEditable) ||
+      (element.getAttribute("role") === "textbox" &&
+        element.isContentEditable) ||
+      (element.getAttribute("data-testid") === "tweetTextarea_0" &&
+        element.isContentEditable) ||
+      (element.getAttribute("aria-label")?.toLowerCase().includes("tweet") &&
+        element.isContentEditable) ||
+      (element.classList.contains("ql-editor") && element.isContentEditable) ||
+      (element.classList.contains("msg-form__contenteditable") &&
+        element.isContentEditable) ||
+      (element
         .getAttribute("data-placeholder")
         ?.toLowerCase()
-        .includes("share") ||
-      // Facebook
-      element.getAttribute("aria-label")?.toLowerCase().includes("comment") ||
-      element.getAttribute("aria-label")?.toLowerCase().includes("post") ||
-      // Instagram
-      element.getAttribute("placeholder")?.toLowerCase().includes("comment");
+        .includes("share") &&
+        element.isContentEditable) ||
+      (element.getAttribute("aria-label")?.toLowerCase().includes("comment") &&
+        element.isContentEditable) ||
+      (element.getAttribute("aria-label")?.toLowerCase().includes("post") &&
+        element.isContentEditable) ||
+      (element.getAttribute("placeholder")?.toLowerCase().includes("comment") &&
+        element.isContentEditable);
 
+    // Comprehensive search exclusion
     const isSearchInput =
       element.type === "search" ||
       element.getAttribute("role") === "searchbox" ||
+      element.getAttribute("role") === "combobox" ||
       element.getAttribute("aria-label")?.toLowerCase().includes("search") ||
-      element.className?.toLowerCase().includes("search");
+      element.getAttribute("placeholder")?.toLowerCase().includes("search") ||
+      element.className?.toLowerCase().includes("search") ||
+      element.id?.toLowerCase().includes("search") ||
+      element.name?.toLowerCase() === "q" ||
+      (element.getAttribute("autocomplete") === "off" &&
+        element.name?.toLowerCase().includes("search"));
 
-    return (
-      (isStandardTextInput || isContenteditable || isSocialMediaEditor) &&
-      !isSearchInput
+    const isEditable =
+      isStandardTextInput || isContenteditable || isSocialMediaEditor;
+    console.debug(
+      "Checking element:",
+      element,
+      "Is editable?",
+      isEditable,
+      "Is search?",
+      isSearchInput
     );
+
+    return isEditable && !isSearchInput;
   }
 
   function isElementSuitable(element) {
@@ -282,11 +386,18 @@ function initUnicodeSuggestions() {
 
   function findDeepEditor(element) {
     if (!element || !(element instanceof HTMLElement)) {
-      // console.debug("findDeepEditor: Invalid element", element);
+      console.debug("findDeepEditor: Invalid element", element);
       return null;
     }
 
-    // Twitter - Target the contenteditable div directly
+    if (!isTextInputElement(element)) {
+      console.debug(
+        "findDeepEditor: Element is not a valid text input",
+        element
+      );
+      return null;
+    }
+
     const twitterEditor =
       element.closest('[data-testid="tweetTextarea_0"]') ||
       element.querySelector('[data-testid="tweetTextarea_0"]');
@@ -294,26 +405,24 @@ function initUnicodeSuggestions() {
       twitterEditor &&
       twitterEditor.getAttribute("contenteditable") === "true"
     ) {
-      // console.debug("findDeepEditor: Found Twitter editor", twitterEditor);
+      console.debug("findDeepEditor: Found Twitter editor", twitterEditor);
       return twitterEditor;
     }
 
-    // LinkedIn
     const linkedinEditor =
       element.closest(".ql-editor") ||
       element.closest(".msg-form__contenteditable");
-    if (linkedinEditor) return linkedinEditor;
+    if (linkedinEditor && linkedinEditor.isContentEditable)
+      return linkedinEditor;
 
-    // Facebook
     const facebookEditor =
       element.querySelector('[data-text="true"]') ||
       element.closest(".notranslate");
-    if (facebookEditor) return facebookEditor;
+    if (facebookEditor && facebookEditor.isContentEditable)
+      return facebookEditor;
 
-    // Instagram
     if (element.matches("textarea")) return element;
 
-    // Generic contenteditable
     return element.isContentEditable ? element : null;
   }
 
@@ -328,7 +437,10 @@ function initUnicodeSuggestions() {
 
     const targetInput = findDeepEditor(input);
     if (!targetInput) {
-      // console.debug("setupInputElement: No valid target input found for", input);
+      console.debug(
+        "setupInputElement: No valid target input found for",
+        input
+      );
       return;
     }
 
@@ -405,10 +517,22 @@ function initUnicodeSuggestions() {
         e.preventDefault();
         const cmd = option.getAttribute("data-cmd");
         if (cmd) {
-          // console.debug("Applying style", cmd, "to", targetInput);
+          console.debug("Applying style", cmd, "to", targetInput);
           applyStyle(targetInput, cmd);
         }
         popup.classList.add("hidden");
+      });
+    });
+
+    targetInput.addEventListener("keydown", (e) => {
+      STYLES.forEach((style) => {
+        if (style.shortcut === `Ctrl+${e.key.toUpperCase()}` && e.ctrlKey) {
+          e.preventDefault();
+          console.debug(
+            `Shortcut ${style.shortcut} triggered for ${style.cmd}`
+          );
+          applyStyle(targetInput, style.cmd);
+        }
       });
     });
 
@@ -451,16 +575,15 @@ function initUnicodeSuggestions() {
                   "[aria-label*='tweet' i], [aria-label*='post' i], [aria-label*='comment' i], " +
                   "[placeholder*='comment' i]"
               )
-              .forEach(setupInputElement);
+              .forEach((element) => {
+                if (isTextInputElement(element)) setupInputElement(element);
+              });
           });
         }
       });
     });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     document
       .querySelectorAll(
@@ -470,19 +593,23 @@ function initUnicodeSuggestions() {
           "[aria-label*='tweet' i], [aria-label*='post' i], [aria-label*='comment' i], " +
           "[placeholder*='comment' i]"
       )
-      .forEach(setupInputElement);
+      .forEach((element) => {
+        if (isTextInputElement(element)) setupInputElement(element);
+      });
   }
 
   function checkSocialEditors() {
     document
       .querySelectorAll(
-        ".ql-editor, .msg-form__contenteditable, [contenteditable='true'], " +
-          ".public-DraftEditor-content, .notranslate, [role='textbox'], " +
-          "[data-testid='tweetTextarea_0'], [data-text='true'], " +
+        "input, textarea, [contenteditable='true'], [role='textbox'], " +
+          ".ql-editor, .msg-form__contenteditable, .public-DraftEditor-content, " +
+          ".notranslate, [data-text='true'], [data-testid='tweetTextarea_0'], " +
           "[aria-label*='tweet' i], [aria-label*='post' i], [aria-label*='comment' i], " +
           "[placeholder*='comment' i]"
       )
-      .forEach(setupInputElement);
+      .forEach((element) => {
+        if (isTextInputElement(element)) setupInputElement(element);
+      });
   }
 
   setupDeepDetection();

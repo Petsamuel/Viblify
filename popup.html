@@ -6,14 +6,14 @@
     <title>Vibe</title>
     <link rel="stylesheet" href="popup.css" />
     <link rel="stylesheet" href="assets/input.css" />
-    <link rel="shortcut icon" href="bg-icon.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="icons/bg-icon.png" type="image/x-icon" />
     <!-- JavaScript -->
-    <script defer src="unicode.js"></script>
-    <script defer src="popup.js"></script>
-    <script defer src="content.js"></script>
+    <script src="unicode.js"></script>
+    <script src="popup.js"></script>
+    <script src="content.js"></script>
   </head>
   <body
-    class="p-3 mx-auto w-[35rem] bg-zinc-900 rounded-lg"
+    class="py-4 mx-auto w-[35rem] bg-zinc-900 rounded-lg"
     style="font-family: 'DMSans', Montserrat"
   >
     <div class="space-y-4">
@@ -178,7 +178,7 @@
               <div
                 id="editor"
                 contenteditable="true"
-                class="w-full p-4 prose prose-sm max-w-none focus:outline-none h-[15rem] scroll overflow-y-auto font-[DMSans"
+                class="w-full p-4 prose prose-sm max-w-none focus:outline-none h-[15rem] unicode-scroller overflow-y-auto font-[DMSans"
               ></div>
             </div>
           </div>

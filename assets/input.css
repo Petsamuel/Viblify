@@ -14,11 +14,11 @@
   font-display: swap;
 }
 
-.scroll::-webkit-scrollbar {
+.unicode-scroll::-webkit-scrollbar {
   width: 4px;
 }
 
-.scroll::-webkit-scrollbar-thumb {
+.unicode-scroller::-webkit-scrollbar-thumb {
   background-color: #3f3f46;
   border-radius: 4px;
 }
@@ -70,28 +70,3 @@
 *::-webkit-scrollbar {
   width: 6px;
 }
-
-.unicode-popup {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  margin-bottom: 8px;
-  width: 16rem; /* 64px * 4 */
-  background-color: #27272a; /* Equivalent to bg-zinc-800 */
-  border: 1px solid #52525b; /* Equivalent to border-zinc-600 */
-  border-radius: 0.5rem; /* Rounded-lg */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow-xl */
-  color: #f4f4f5; /* Equivalent to text-zinc-100 */
-  z-index: 9999;
-  
-  transform: scale(0.95);
-  opacity: 0;
-  transform-origin: bottom right;
-  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-}
-
-.unicode-popup.show {
-  transform: scale(1);
-  opacity: 1;
-}
-
