@@ -97,7 +97,7 @@ We welcome contributors! Here's how to help:
 
 ```bash
 # 1. Fork and clone
-git clone your-fork-url
+git clone [viblify](https://github.com/Petsamuel/Viblify.git)
 cd viblify
 
 # 2. Install dev tools (optional)
