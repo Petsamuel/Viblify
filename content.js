@@ -43,73 +43,40 @@ function initUnicodeSuggestions() {
   ];
 
   // Inject custom CSS for consistent styling (unchanged)
-  const styleSheet = document.createElement("style");
-  styleSheet.textContent = `
-    .unicode-suggestion-btn {
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background-color: rgba(34, 197, 94, 0.9);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      transition: transform 0.2s;
-      z-index: 9999;
-    }
-    .unicode-suggestion-btn:hover {
-      transform: scale(1.1);
-    }
-    .unicode-suggestion-btn.hidden {
-      display: none;
-    }
-    .unicode-suggestion-popup {
-      width: 256px;
-      background-color: #27272a;
-      border: 1px solid #4b5563;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      color: #f4f4f5;
-      z-index: 10000;
-      transition: all 0.2s ease-out;
-    }
-    .unicode-suggestion-popup.hidden {
-      display: none;
-    }
-    .unicode-suggestion-popup .suggestion-options {
-      max-height: 256px;
-      overflow-y: auto;
-      padding: 8px;
-      background-color: #18181b;
-    }
-    .unicode-suggestion-popup .suggestion-options button {
-      width: 100%;
-      text-align: left;
-      padding: 8px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: none;
-      color: inherit;
-      cursor: pointer;
-    }
-    .unicode-suggestion-popup .suggestion-options button:hover {
-      background-color: #3f3f46;
-    }
-    .unicode-suggestion-popup .header {
-      padding: 12px;
-      border-bottom: 1px solid #374151;
-      background-color: #18181b;
-    }
-  `;
-  document.head.appendChild(styleSheet);
+  function injectStyles() {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = chrome.runtime.getURL("unicode.css");
+    document.head.appendChild(link);
+  }
+
+  // Call it at startup
+  injectStyles();
+
+  function applyTheme(theme) {
+    document.body.classList.toggle("unicode-dark", theme === "dark");
+    document.body.classList.toggle("unicode-light", theme === "light");
+    const popups = document.querySelectorAll(".unicode-suggestion-popup");
+    popups.forEach((popup) => {
+      popup.classList.toggle("dark", theme === "dark");
+      popup.classList.toggle("light", theme === "light");
+    });
+  }
+
+  function loadTheme(callback) {
+    chrome.storage.sync.get("theme", (data) => {
+      const theme = data.theme || "dark"; // Default to dark to match your original CSS
+      applyTheme(theme);
+      callback(theme);
+    });
+  }
+
+  function toggleTheme(currentTheme) {
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    chrome.storage.sync.set({ theme: newTheme }, () => applyTheme(newTheme));
+    return newTheme;
+  }
 
   function convertText(text, style) {
     const styleMap = window.UnicodeStyler?.styleMaps[style];
@@ -271,16 +238,21 @@ function initUnicodeSuggestions() {
     const popup = document.createElement("div");
     popup.className = "unicode-suggestion-popup hidden";
     popup.innerHTML = `
-      <div class="header">
+      <div class="header flex justify-between items-center p-2 bg-gray-800 dark:bg-gray-900 light:bg-gray-200 rounded-t-md">
         <div class="flex items-center gap-2 text-sm font-medium">
-          <span>Suggestion Styles <style class="text-zinc-300 text-[11px]">(Ctrl+[Key])</style></span>
+          <span>Suggestion Styles <span class="text-neutral-600 text-[11px]">(Ctrl+[Key])</span></span>
         </div>
+        <button id="theme-toggle" class="cursor-pointer text-xs p-1.5 rounded hover:bg-gray-600 dark:hover:bg-gray-700 light:hover:bg-gray-200">
+          <svg class="w-4 h-4 theme-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
       </div>
       <div class="suggestion-options">
         ${STYLES.map(
           (style) => `
             <button data-cmd="${style.cmd}">
-              <span class="w-6">${style.char}</span> ${style.name} <span class="ml-2  opacity-70 text-zinc-300 text-[11px]">${style.shortcut}</span>
+              <span class="w-6">${style.char}</span> ${style.name} <span class="ml-2  opacity-70 text-neutral-600 text-[11px]">${style.shortcut}</span>
             </button>
           `
         ).join("")}
@@ -366,14 +338,14 @@ function initUnicodeSuggestions() {
 
     const isEditable =
       isStandardTextInput || isContenteditable || isSocialMediaEditor;
-    console.debug(
-      "Checking element:",
-      element,
-      "Is editable?",
-      isEditable,
-      "Is search?",
-      isSearchInput
-    );
+    // console.debug(
+    //   "Checking element:",
+    //   element,
+    //   "Is editable?",
+    //   isEditable,
+    //   "Is search?",
+    //   isSearchInput
+    // );
 
     return isEditable && !isSearchInput;
   }
@@ -386,15 +358,15 @@ function initUnicodeSuggestions() {
 
   function findDeepEditor(element) {
     if (!element || !(element instanceof HTMLElement)) {
-      console.debug("findDeepEditor: Invalid element", element);
+      // console.debug("findDeepEditor: Invalid element", element);
       return null;
     }
 
     if (!isTextInputElement(element)) {
-      console.debug(
-        "findDeepEditor: Element is not a valid text input",
-        element
-      );
+      // console.debug(
+      //   "findDeepEditor: Element is not a valid text input",
+      //   element
+      // );
       return null;
     }
 
@@ -405,7 +377,7 @@ function initUnicodeSuggestions() {
       twitterEditor &&
       twitterEditor.getAttribute("contenteditable") === "true"
     ) {
-      console.debug("findDeepEditor: Found Twitter editor", twitterEditor);
+      // console.debug("findDeepEditor: Found Twitter editor", twitterEditor);
       return twitterEditor;
     }
 
@@ -437,10 +409,10 @@ function initUnicodeSuggestions() {
 
     const targetInput = findDeepEditor(input);
     if (!targetInput) {
-      console.debug(
-        "setupInputElement: No valid target input found for",
-        input
-      );
+      // console.debug(
+      //   "setupInputElement: No valid target input found for",
+      //   input
+      // );
       return;
     }
 
@@ -517,7 +489,7 @@ function initUnicodeSuggestions() {
         e.preventDefault();
         const cmd = option.getAttribute("data-cmd");
         if (cmd) {
-          console.debug("Applying style", cmd, "to", targetInput);
+          // console.debug("Applying style", cmd, "to", targetInput);
           applyStyle(targetInput, cmd);
         }
         popup.classList.add("hidden");
@@ -528,9 +500,9 @@ function initUnicodeSuggestions() {
       STYLES.forEach((style) => {
         if (style.shortcut === `Ctrl+${e.key.toUpperCase()}` && e.ctrlKey) {
           e.preventDefault();
-          console.debug(
-            `Shortcut ${style.shortcut} triggered for ${style.cmd}`
-          );
+          // console.debug(
+          //   `Shortcut ${style.shortcut} triggered for ${style.cmd}`
+          // );
           applyStyle(targetInput, style.cmd);
         }
       });
@@ -556,6 +528,19 @@ function initUnicodeSuggestions() {
         timeoutId = setTimeout(checkInput, 800);
       });
     }
+
+    loadTheme((currentTheme) => {
+      const themeToggle = popup.querySelector("#theme-toggle");
+      themeToggle.addEventListener("click", () => {
+        const newTheme = toggleTheme(currentTheme);
+        currentTheme = newTheme; // Update local state
+        const icon = themeToggle.querySelector(".theme-icon");
+        icon.innerHTML =
+          newTheme === "light"
+            ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>`
+            : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>`;
+      });
+    });
 
     checkInput();
   }

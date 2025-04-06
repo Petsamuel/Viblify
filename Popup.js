@@ -25,12 +25,6 @@ let isApplyingStyle = false;
  * @returns {string} Styled text
  */
 function convertText(text, style) {
-  // Fail-safe if unicode.js isn't loaded
-  // if (!window.UnicodeStyler || !window.UnicodeStyler.styleMaps) {
-  //   console.error("Unicode maps not loaded!");
-  //   return text;
-  // }
-
   const { styleMaps } = window.UnicodeStyler;
   if (!text || !styleMaps[style]) return text;
 
@@ -54,7 +48,6 @@ function convertText(text, style) {
  * @param {string} style - Style key to apply
  */
 function applyStyle(style) {
-  // Fail-safe check
   if (!window.UnicodeStyler) {
     console.error("UnicodeStyler not loaded");
     return;
@@ -72,60 +65,11 @@ function applyStyle(style) {
     const styledText = convertText(selectedText, style);
     range.deleteContents();
     range.insertNode(document.createTextNode(styledText));
-  } 
-  // else {
-  //   // Insert sample text at cursor
-  //   const sample = window.UnicodeStyler.sampleText[style] || "";
-  //   range.insertNode(document.createTextNode(sample));
-  // }
+  }
   isApplyingStyle = false;
   saveState(); // Save state after applying style
   updateUndoRedoButtons();
 }
-
-// Clipboard functionality
-document.getElementById("sticky-copy").addEventListener("click", async () => {
-  const editor = document.getElementById("editor");
-  if (!editor.innerText.trim()) return;
-
-  try {
-    await navigator.clipboard.writeText(editor.innerText);
-    showTooltip("sticky-copy", "Copied!");
-  } catch (err) {
-    showTooltip("sticky-copy", "Failed!");
-    console.error("Copy failed:", err);
-  }
-});
-
-// Save functionality (using localStorage)
-document.getElementById("sticky-save").addEventListener("click", () => {
-  const editor = document.getElementById("editor");
-  const content = editor.innerText.trim();
-  if (!content) return;
-
-  try {
-    const timestamp = new Date().toISOString();
-    const saveKey = `vibe-doc-${timestamp}`;
-
-    localStorage.setItem(saveKey, content);
-
-    const savedDocs = JSON.parse(
-      localStorage.getItem("vibe-documents") || "[]"
-    );
-
-    savedDocs.push({
-      id: saveKey,
-      content,
-      timestamp,
-    });
-
-    localStorage.setItem("vibe-documents", JSON.stringify(savedDocs));
-    showTooltip("sticky-save", "Saved!");
-  } catch (err) {
-    console.error("Save failed:", err);
-    showTooltip("sticky-save", "Failed!");
-  }
-});
 
 // Show tooltip feedback
 function showTooltip(elementId, message) {
@@ -182,6 +126,7 @@ function initUndoRedo() {
   // Update button states initially
   updateUndoRedoButtons();
 }
+
 function saveState() {
   const editor = document.getElementById("editor");
   const currentState = editor.innerHTML;
@@ -232,22 +177,8 @@ window.addEventListener("DOMContentLoaded", () => {
  */
 function initEditor() {
   initUndoRedo();
-  // style selector
-  document.getElementById("style-selector").addEventListener("change", (e) => {
-    const style = e.target.value;
-    if (style) {
-      // Visual feedback
-      e.target.classList.add("ring-1", "ring-green-400");
-      setTimeout(() => {
-        e.target.classList.remove("ring-1", "ring-green-400");
-        e.target.value = ""; // Reset the select
-      }, 200);
 
-      applyStyle(style);
-    }
-  });
-
-  // 2. Editor setup
+  // Editor setup
   const editor = document.getElementById("editor");
   editor.focus();
   editor.addEventListener("input", () => {
@@ -255,9 +186,84 @@ function initEditor() {
   });
 }
 
+/**
+ * Attaches event listeners to DOM elements
+ */
+function attachEventListeners() {
+  const copyButton = document.getElementById("sticky-copy");
+  const saveButton = document.getElementById("sticky-save");
+  const styleSelector = document.getElementById("style-selector");
+
+  if (copyButton) {
+    copyButton.addEventListener("click", async () => {
+      const editor = document.getElementById("editor");
+      if (!editor.innerText.trim()) return;
+
+      try {
+        await navigator.clipboard.writeText(editor.innerText);
+        showTooltip("sticky-copy", "Copied!");
+      } catch (err) {
+        showTooltip("sticky-copy", "Failed!");
+        console.error("Copy failed:", err);
+      }
+    });
+  }
+
+  if (saveButton) {
+    saveButton.addEventListener("click", () => {
+      const editor = document.getElementById("editor");
+      const content = editor.innerText.trim();
+      if (!content) return;
+
+      try {
+        const timestamp = new Date().toISOString();
+        const saveKey = `vibe-doc-${timestamp}`;
+
+        localStorage.setItem(saveKey, content);
+
+        const savedDocs = JSON.parse(
+          localStorage.getItem("vibe-documents") || "[]"
+        );
+
+        savedDocs.push({
+          id: saveKey,
+          content,
+          timestamp,
+        });
+
+        localStorage.setItem("vibe-documents", JSON.stringify(savedDocs));
+        showTooltip("sticky-save", "Saved!");
+      } catch (err) {
+        console.error("Save failed:", err);
+        showTooltip("sticky-save", "Failed!");
+      }
+    });
+  }
+
+  if (styleSelector) {
+    styleSelector.addEventListener("change", (e) => {
+      const style = e.target.value;
+      if (style) {
+        // Visual feedback
+        e.target.classList.add("ring-1", "ring-green-400");
+        setTimeout(() => {
+          e.target.classList.remove("ring-1", "ring-green-400");
+          e.target.value = ""; // Reset the select
+        }, 200);
+
+        applyStyle(style);
+      }
+    });
+  }
+}
+
 // Initialize when DOM is fully loaded
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initEditor);
+  document.addEventListener("DOMContentLoaded", () => {
+    initEditor();
+    attachEventListeners();
+  });
 } else {
   initEditor();
+  attachEventListeners();
 }

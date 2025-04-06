@@ -21,7 +21,7 @@ Viblify is the lightweight browser extension that brings professional Unicode st
 2. Visit `chrome://extensions` (Chrome) or `edge://extensions` (Edge)
 3. Drag and drop the .crx file into the page
 4. When you see:  
-   ![Extension Warning](./safty_check.png)  
+   ![Extension Warning](./images/safty_check.png)  
    Click "Add extension" - this is normal for self-hosted extensions
 5. Confirm installation when prompted
 
@@ -68,7 +68,7 @@ cd viblify
    - Script: `Ctrl+S`
    - More in the menu!
 
-![Usage Example](./viblify_Screenshot.png)
+![Usage Example](./images/viblifyMenu_Screenshot.png)
 
 ## 🏆 Supported Platforms
 

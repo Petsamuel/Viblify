@@ -1,17 +1,19 @@
 {
-  "name": "extension",
-  "version": "1.0.0",
+  "name": "viblify",
+  "version": "0.1.0",
   "main": "background.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tw": "npx @tailwindcss/cli -i ./assets/input.css -o ./popup.css --minify --watch"
+    "tw": "npx @tailwindcss/cli -i ./assets/input.css -o ./popup.css --minify --watch",
+    "build": "node build.js --no-cache --watch"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Peter Samuel",
+  "license": "MIT",
+  "description": "A Chrome extension for viblify.",
   "dependencies": {
     "@tailwindcss/cli": "^4.0.17",
+    "archiver": "^7.0.1",
     "tailwindcss": "^4.0.17"
   }
 }

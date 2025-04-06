@@ -4,3 +4,6 @@ package-lock.json
 yarn.lock
 tailwind.config.js
 .vscode
+build.js
+viblify
+*.pem
