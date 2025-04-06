@@ -47,7 +47,7 @@ function initUnicodeSuggestions() {
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.type = "text/css";
-    link.href = chrome.runtime.getURL("unicode.css");
+    link.href = chrome.runtime.getURL("../css/unicode.css");
     document.head.appendChild(link);
   }
 

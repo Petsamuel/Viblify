@@ -16,8 +16,16 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["unicode.js", "content.js"],
-      "css": ["assets/input.css", "popup.css", "unicode.css"],
+      "js": [
+        "assets/js/unicode.js",
+        "assets/js/content.js",
+        "assets/js/popup.js"
+      ],
+      "css": [
+        "assets/css/input.css",
+        "assets/css/unicode.css",
+        "assets/css/popup.css"
+      ],
       "run_at": "document_end",
       "all_frames": true
     }
@@ -25,11 +33,12 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "unicode.css",
-        "popup.css",
-        "Popup.js",
-        "assets/DMSans.ttf",
-        "assets/Montserrat.ttf"
+        "assets/css/input.css",
+        "assets/css/unicode.css",
+        "assets/css/popup.css",
+        "assets/js/popup.js",
+        "assets/fonts/DMSans.ttf",
+        "assets/fonts/Montserrat.ttf"
       ],
       "matches": ["<all_urls>"]
     }
