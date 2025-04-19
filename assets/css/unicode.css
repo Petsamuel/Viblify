@@ -1,4 +1,4 @@
-/* Base styles (shared across themes) */
+/* Base styles (scoped specifically to extension elements) */
 .unicode-suggestion-btn {
   position: absolute;
   right: 8px;
@@ -12,6 +12,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s;
   z-index: 9999;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .unicode-suggestion-btn:hover {
@@ -25,9 +27,13 @@
 .unicode-suggestion-popup {
   width: 256px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   transition: all 0.2s ease-out;
+  position: fixed; /* Ensures proper positioning */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .unicode-suggestion-popup.hidden {
@@ -38,6 +44,7 @@
   max-height: 256px;
   overflow-y: auto;
   padding: 8px;
+  border-radius: 0 0 8px 8px;
 }
 
 .unicode-suggestion-popup .suggestion-options button {
@@ -51,11 +58,104 @@
   background: none;
   border: none;
   cursor: pointer;
+  position: relative; /* For preview positioning */
+  transition: all 0.2s ease;
+}
+
+/* Style layers checkboxes */
+.style-layers-container {
+  border-top: 1px solid rgba(75, 85, 99, 0.3);
+  padding: 12px;
+  font-size: 12px;
+  border-radius: 0 0 8px 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.style-layer-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.style-layer-item:hover {
+  background-color: rgba(63, 63, 70, 0.4);
+}
+
+.unicode-light .style-layer-item:hover {
+  background-color: rgba(229, 231, 235, 0.6);
+}
+
+.style-layer-item:last-child {
+  margin-bottom: 0;
+}
+
+.style-layer-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.style-layer-preview {
+  margin-left: auto;
+  font-size: 14px;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+.layer-apply-btn,
+.layer-clear-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: rgba(34, 197, 94, 0.85);
+  color: white;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.layer-clear-btn {
+  background-color: rgba(107, 114, 128, 0.7);
+}
+
+.layer-apply-btn:hover {
+  background-color: rgba(34, 197, 94, 1);
+  transform: translateY(-1px);
+}
+
+.layer-clear-btn:hover {
+  background-color: rgba(107, 114, 128, 0.9);
+  transform: translateY(-1px);
+}
+
+/* Preview element styling */
+.unicode-preview {
+  position: absolute;
+  right: 10px;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.unicode-preview.highlighted {
+  opacity: 1;
+  font-weight: bold;
 }
 
 .unicode-suggestion-popup .header {
   padding: 12px;
   border-bottom: 1px solid;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px 8px 0 0;
 }
 
 .unicode-char-counter {
@@ -68,6 +168,8 @@
   background: rgba(0, 0, 0, 0.7);
   z-index: 9998;
   font-family: system-ui, sans-serif;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .unicode-char-counter.warning {
@@ -91,11 +193,112 @@
   }
 }
 
+/* Tab navigation styling */
+.tab-navigation {
+  display: flex;
+  border-bottom: 1px solid;
+  background-color: rgba(24, 24, 27, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.unicode-light .tab-navigation {
+  background-color: rgba(249, 250, 251, 0.85);
+  border-bottom-color: rgba(209, 213, 219, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.unicode-dark .tab-navigation,
+.tab-navigation {
+  border-bottom-color: rgba(55, 65, 81, 0.5);
+}
+
+.tab-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  color: inherit;
+}
+
+.tab-button.active {
+  border-bottom-color: #22c55e;
+  font-weight: 600;
+}
+
+.unicode-light .tab-button:hover {
+  background-color: rgba(243, 244, 246, 0.6);
+}
+
+.unicode-dark .tab-button:hover,
+.tab-button:hover {
+  background-color: rgba(39, 39, 42, 0.6);
+}
+
+/* Tab content styling */
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* Currency category styling */
+.currency-category {
+  padding: 8px 0;
+}
+
+.currency-category-title {
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #22c55e;
+  margin: 0 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.currency-options {
+  max-height: 256px;
+  overflow-y: auto;
+  padding: 0 8px;
+  background-color: transparent;
+}
+
+.currency-options button {
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.currency-symbol {
+  display: inline-block;
+  width: 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+}
+
 /* Dark theme (your original design) */
 .unicode-dark .unicode-suggestion-btn,
 .unicode-suggestion-btn {
   /* Default to dark unless overridden */
-  background-color: rgba(34, 197, 94, 0.9);
+  background-color: rgba(34, 197, 94, 0.85);
   color: white;
   border: 1px solid rgba(74, 222, 128, 0.3);
 }
@@ -103,30 +306,40 @@
 .unicode-dark .unicode-suggestion-popup,
 .unicode-suggestion-popup {
   /* Default to dark unless overridden */
-  background-color: #27272a;
-  border: 1px solid #4b5563;
+  background-color: rgba(39, 39, 42, 0.85);
+  border: 1px solid rgba(75, 85, 99, 0.5);
   color: #f4f4f5;
 }
 
 .unicode-dark .unicode-suggestion-popup .suggestion-options,
-.unicode-suggestion-popup .suggestion-options {
-  background-color: #18181b;
+.unicode-suggestion-popup .suggestion-options,
+.unicode-dark .currency-options,
+.currency-options,
+.unicode-dark .style-layers-container,
+.style-layers-container {
+  background-color: rgba(24, 24, 27, 0.75);
 }
 
 .unicode-dark .unicode-suggestion-popup .suggestion-options button,
-.unicode-suggestion-popup .suggestion-options button {
+.unicode-suggestion-popup .suggestion-options button,
+.unicode-dark .currency-options button,
+.currency-options button,
+.unicode-dark .style-layer-item,
+.style-layer-item {
   color: #f4f4f5;
 }
 
 .unicode-dark .unicode-suggestion-popup .suggestion-options button:hover,
-.unicode-suggestion-popup .suggestion-options button:hover {
-  background-color: #3f3f46;
+.unicode-suggestion-popup .suggestion-options button:hover,
+.unicode-dark .currency-options button:hover,
+.currency-options button:hover {
+  background-color: rgba(63, 63, 70, 0.7);
 }
 
 .unicode-dark .unicode-suggestion-popup .header,
 .unicode-suggestion-popup .header {
-  border-bottom-color: #374151;
-  background-color: #18181b;
+  border-bottom-color: rgba(55, 65, 81, 0.5);
+  background-color: rgba(24, 24, 27, 0.85);
 }
 
 .unicode-dark .unicode-char-counter,
@@ -134,37 +347,149 @@
   color: #d1d5db;
 }
 
+.unicode-dark .style-layers-container,
+.style-layers-container {
+  border-top-color: #374151;
+}
+
 /* Light theme */
 .unicode-light .unicode-suggestion-btn {
-  background-color: rgba(34, 197, 94, 0.9); /* Keep the green for consistency */
+  background-color: rgba(
+    34,
+    197,
+    94,
+    0.85
+  ); /* Keep the green for consistency */
   color: white;
   border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
 .unicode-light .unicode-suggestion-popup {
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(209, 213, 219, 0.5);
+  color: #1f2937;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.unicode-light .unicode-suggestion-popup .suggestion-options,
+.unicode-light .currency-options,
+.unicode-light .style-layers-container {
+  background-color: rgba(249, 250, 251, 0.75);
+}
+
+.unicode-light .unicode-suggestion-popup .suggestion-options button,
+.unicode-light .currency-options button,
+.unicode-light .style-layer-item {
   color: #1f2937;
 }
 
-.unicode-light .unicode-suggestion-popup .suggestion-options {
-  background-color: #f9fafb;
-}
-
-.unicode-light .unicode-suggestion-popup .suggestion-options button {
-  color: #1f2937;
-}
-
-.unicode-light .unicode-suggestion-popup .suggestion-options button:hover {
-  background-color: #e5e7eb;
+.unicode-light .unicode-suggestion-popup .suggestion-options button:hover,
+.unicode-light .currency-options button:hover {
+  background-color: rgba(229, 231, 235, 0.7);
 }
 
 .unicode-light .unicode-suggestion-popup .header {
-  border-bottom-color: #d1d5db;
-  background-color: #f9fafb;
+  border-bottom-color: rgba(209, 213, 219, 0.5);
+  background-color: rgba(249, 250, 251, 0.85);
 }
 
 .unicode-light .unicode-char-counter {
   color: #4b5563;
   background: rgba(255, 255, 255, 0.7); /* Light background for visibility */
+}
+
+.unicode-light .style-layers-container {
+  border-top-color: #d1d5db;
+}
+
+/* Site-specific themes */
+/* Twitter theme */
+.site-twitter .unicode-suggestion-btn {
+  background-color: rgba(29, 161, 242, 0.9);
+  border-color: rgba(29, 161, 242, 0.3);
+}
+
+.site-twitter .tab-button.active {
+  border-bottom-color: #1da1f2;
+}
+
+.site-twitter .currency-category-title {
+  color: #1da1f2;
+}
+
+/* Facebook theme */
+.site-facebook .unicode-suggestion-btn {
+  background-color: rgba(66, 103, 178, 0.9);
+  border-color: rgba(66, 103, 178, 0.3);
+}
+
+.site-facebook .tab-button.active {
+  border-bottom-color: #4267b2;
+}
+
+.site-facebook .currency-category-title {
+  color: #4267b2;
+}
+
+/* LinkedIn theme */
+.site-linkedin .unicode-suggestion-btn {
+  background-color: rgba(0, 119, 181, 0.9);
+  border-color: rgba(0, 119, 181, 0.3);
+}
+
+.site-linkedin .tab-button.active {
+  border-bottom-color: #0077b5;
+}
+
+.site-linkedin .currency-category-title {
+  color: #0077b5;
+}
+
+/* Instagram theme */
+.site-instagram .unicode-suggestion-btn {
+  background: linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+  border-color: rgba(225, 48, 108, 0.3);
+}
+
+.site-instagram .tab-button.active {
+  border-bottom-color: #e1306c;
+}
+
+.site-instagram .currency-category-title {
+  color: #e1306c;
+}
+
+/* Reddit theme */
+.site-reddit .unicode-suggestion-btn {
+  background-color: rgba(255, 86, 0, 0.9);
+  border-color: rgba(255, 86, 0, 0.3);
+}
+
+.site-reddit .tab-button.active {
+  border-bottom-color: #ff5600;
+}
+
+.site-reddit .currency-category-title {
+  color: #ff5600;
+}
+
+/* GitHub theme */
+.site-github .unicode-suggestion-btn {
+  background-color: rgba(36, 41, 46, 0.9);
+  border-color: rgba(36, 41, 46, 0.3);
+}
+
+.site-github .tab-button.active {
+  border-bottom-color: #24292e;
+}
+
+.site-github .currency-category-title {
+  color: #24292e;
 }

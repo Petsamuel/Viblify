@@ -1,48 +1,132 @@
 function initUnicodeSuggestions() {
   const MIN_INPUT_HEIGHT = 20;
   const MIN_INPUT_WIDTH = 100;
-  const IDLE_TIMEOUT = 5000;
+  const IDLE_TIMEOUT = 8000;
+
+  // Helper function to detect Mac OS
+  const isMac = () => navigator.platform.toUpperCase().includes("MAC");
+
+  // Text sample for previews
+  let previewText = "Abc";
+
+  // Active style layers
+  let activeLayers = [];
+
+  // Site-specific theme detection
+  const SITE_THEMES = [
+    {
+      name: "twitter",
+      patterns: ["twitter.com", "x.com"],
+      primaryColor: "#1da1f2",
+    },
+    {
+      name: "facebook",
+      patterns: ["facebook.com", "fb.com"],
+      primaryColor: "#4267B2",
+    },
+    {
+      name: "linkedin",
+      patterns: ["linkedin.com"],
+      primaryColor: "#0077b5",
+    },
+    {
+      name: "instagram",
+      patterns: ["instagram.com"],
+      primaryColor: "#e1306c",
+    },
+    {
+      name: "reddit",
+      patterns: ["reddit.com"],
+      primaryColor: "#ff5600",
+    },
+    {
+      name: "github",
+      patterns: ["github.com"],
+      primaryColor: "#24292e",
+    },
+  ];
+
+  // Currency categories
+  const CURRENCY_CATEGORIES = [
+    {
+      name: "Popular",
+      symbols: [
+        { id: "usd", name: "US Dollar", symbol: "$" },
+        { id: "eur", name: "Euro", symbol: "€" },
+        { id: "gbp", name: "British Pound", symbol: "£" },
+        { id: "jpy", name: "Japanese Yen", symbol: "¥" },
+        { id: "inr", name: "Indian Rupee", symbol: "₹" },
+        { id: "btc", name: "Bitcoin", symbol: "₿" },
+        { id: "rub", name: "Russian Ruble", symbol: "₽" },
+        { id: "krw", name: "Korean Won", symbol: "₩" },
+      ],
+    },
+    {
+      name: "Other",
+      symbols: [
+        { id: "baht", name: "Thai Baht", symbol: "฿" },
+        { id: "ngn", name: "Nigerian Naira", symbol: "₦" },
+        { id: "peso", name: "Philippine Peso", symbol: "₱" },
+        { id: "brazil", name: "Brazilian Real", symbol: "R$" },
+        { id: "lira", name: "Turkish Lira", symbol: "₺" },
+        { id: "cent", name: "Cent", symbol: "¢" },
+        { id: "genericCurrency", name: "Currency", symbol: "¤" },
+      ],
+    },
+  ];
 
   const STYLES = [
-    { id: "bold", name: "Bold", char: "𝗕", cmd: "bold", shortcut: "Ctrl+B" },
+    {
+      id: "bold",
+      name: "Bold",
+      char: "𝗕",
+      cmd: "bold",
+      shortcut: ["Ctrl+B", "Cmd+B"],
+    },
     {
       id: "italic",
       name: "Italic",
       char: "𝘪",
       cmd: "italic",
-      shortcut: "Ctrl+I",
+      shortcut: ["Ctrl+I", "Cmd+I"],
     },
     {
       id: "script",
       name: "Script",
       char: "𝓢",
       cmd: "script",
-      shortcut: "Ctrl+S",
+      shortcut: ["Ctrl+S", "Cmd+S"],
     },
     {
       id: "monospace",
       name: "Monospace",
       char: "𝙼",
       cmd: "monospace",
-      shortcut: "Ctrl+M",
+      shortcut: ["Ctrl+M", "Cmd+M"],
     },
     {
       id: "fraktur",
       name: "Fraktur",
       char: "𝔉",
       cmd: "fraktur",
-      shortcut: "Ctrl+F",
+      shortcut: ["Ctrl+F", "Cmd+F"],
     },
     {
       id: "doubleStruck",
       name: "Double Struck",
       char: "𝕊",
       cmd: "doubleStruck",
-      shortcut: "Ctrl+D",
+      shortcut: ["Ctrl+D", "Cmd+D"],
     },
   ];
 
-  // Inject custom CSS for consistent styling (unchanged)
+  // Track active popup
+  let activePopup = null;
+
+  // Track active tab
+  let activeTab = "styles"; // 'styles' or 'currency'
+
+  // Inject custom CSS for consistent styling
   function injectStyles() {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -54,9 +138,39 @@ function initUnicodeSuggestions() {
   // Call it at startup
   injectStyles();
 
+  // Detect site and apply appropriate theme
+  function detectSiteTheme() {
+    const currentUrl = window.location.href;
+    let detectedSite = null;
+
+    for (const site of SITE_THEMES) {
+      for (const pattern of site.patterns) {
+        if (currentUrl.includes(pattern)) {
+          detectedSite = site.name;
+          break;
+        }
+      }
+      if (detectedSite) break;
+    }
+
+    return detectedSite;
+  }
+
   function applyTheme(theme) {
     document.body.classList.toggle("unicode-dark", theme === "dark");
     document.body.classList.toggle("unicode-light", theme === "light");
+
+    // Remove any existing site theme classes
+    SITE_THEMES.forEach((site) => {
+      document.body.classList.remove(`site-${site.name}`);
+    });
+
+    // Apply site-specific theme if detected
+    const siteTheme = detectSiteTheme();
+    if (siteTheme) {
+      document.body.classList.add(`site-${siteTheme}`);
+    }
+
     const popups = document.querySelectorAll(".unicode-suggestion-popup");
     popups.forEach((popup) => {
       popup.classList.toggle("dark", theme === "dark");
@@ -78,6 +192,17 @@ function initUnicodeSuggestions() {
     return newTheme;
   }
 
+  // Apply multiple style transformations for style layers
+  function applyLayeredStyles(text, stylesList) {
+    if (!stylesList || !stylesList.length) return text;
+
+    let result = text;
+    for (const style of stylesList) {
+      result = convertText(result, style);
+    }
+    return result;
+  }
+
   function convertText(text, style) {
     const styleMap = window.UnicodeStyler?.styleMaps[style];
     if (!styleMap) {
@@ -96,29 +221,43 @@ function initUnicodeSuggestions() {
       .join("");
   }
 
-  function applyStyle(input, style) {
+  function applyStyle(input, style, isLayer = false) {
     if (!input || !(input instanceof HTMLElement)) {
       console.error("Invalid input element");
       return;
     }
 
+    // If using style layers and this is a layer action, add/remove from layers
+    if (isLayer) {
+      const layerIndex = activeLayers.indexOf(style);
+      if (layerIndex >= 0) {
+        // Remove this layer
+        activeLayers.splice(layerIndex, 1);
+      } else {
+        // Add this layer
+        activeLayers.push(style);
+      }
+      // Use all active layers to transform text
+      style = activeLayers.length > 0 ? activeLayers : null;
+    }
+
     const twitterEditor = input.closest('[data-testid="tweetTextarea_0"]');
     if (twitterEditor) {
-      applyTwitterStyle(twitterEditor, style);
+      applyTwitterStyle(twitterEditor, style, isLayer);
       return;
     }
 
     if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
-      applyStandardInputStyle(input, style);
+      applyStandardInputStyle(input, style, isLayer);
       return;
     }
 
     if (input.isContentEditable) {
-      applyContentEditableStyle(input, style);
+      applyContentEditableStyle(input, style, isLayer);
     }
   }
 
-  function applyTwitterStyle(editor, style) {
+  function applyTwitterStyle(editor, style, isLayer = false) {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
 
@@ -131,26 +270,116 @@ function initUnicodeSuggestions() {
     }
 
     try {
+      // Get current cursor position to restore later
+      const selectionState = saveTwitterSelection(contentDiv);
+
       if (!range.collapsed) {
         const selectedText = range.toString();
         if (selectedText) {
-          const styledText = convertText(selectedText, style);
+          let styledText;
+          if (isLayer && Array.isArray(style)) {
+            styledText = applyLayeredStyles(selectedText, style);
+          } else if (!isLayer) {
+            styledText = convertText(selectedText, style);
+          } else {
+            return; // No styles to apply
+          }
+
           range.deleteContents();
           range.insertNode(document.createTextNode(styledText));
           triggerTwitterEvents(editor);
+
+          // Restore selection
+          restoreTwitterSelection(contentDiv, selectionState);
           return;
         }
       }
 
       const textNodes = getTextNodes(contentDiv);
       textNodes.forEach((node) => {
-        node.nodeValue = convertText(node.nodeValue, style);
+        if (isLayer && Array.isArray(style)) {
+          node.nodeValue = applyLayeredStyles(node.nodeValue, style);
+        } else if (!isLayer) {
+          node.nodeValue = convertText(node.nodeValue, style);
+        }
       });
 
       triggerTwitterEvents(editor);
+
+      // Restore selection after applying style
+      restoreTwitterSelection(contentDiv, selectionState);
+
+      // Ensure editor maintains focus
+      setTimeout(() => {
+        editor.focus();
+      }, 10);
     } catch (error) {
       console.error("Error applying Twitter style:", error);
     }
+  }
+
+  // Helper functions for Twitter selection preservation
+  function saveTwitterSelection(containerEl) {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const preSelectionRange = range.cloneRange();
+      preSelectionRange.selectNodeContents(containerEl);
+      preSelectionRange.setEnd(range.startContainer, range.startOffset);
+      const start = preSelectionRange.toString().length;
+
+      return {
+        start: start,
+        end: start + range.toString().length,
+      };
+    }
+    return null;
+  }
+
+  function restoreTwitterSelection(containerEl, savedSel) {
+    if (!savedSel) return;
+
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.setStart(containerEl, 0);
+    range.collapse(true);
+
+    const nodeStack = [containerEl];
+    let node,
+      foundStart = false,
+      stop = false;
+    let charIndex = 0;
+
+    while (!stop && (node = nodeStack.pop())) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const nextCharIndex = charIndex + node.length;
+        if (
+          !foundStart &&
+          savedSel.start >= charIndex &&
+          savedSel.start <= nextCharIndex
+        ) {
+          range.setStart(node, savedSel.start - charIndex);
+          foundStart = true;
+        }
+        if (
+          foundStart &&
+          savedSel.end >= charIndex &&
+          savedSel.end <= nextCharIndex
+        ) {
+          range.setEnd(node, savedSel.end - charIndex);
+          stop = true;
+        }
+        charIndex = nextCharIndex;
+      } else {
+        let i = node.childNodes.length;
+        while (i--) {
+          nodeStack.push(node.childNodes[i]);
+        }
+      }
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
   }
 
   function getTextNodes(element) {
@@ -183,29 +412,45 @@ function initUnicodeSuggestions() {
     });
     editor.dispatchEvent(changeEvent);
 
-    editor.blur();
-    editor.focus();
+    // Don't call blur() as it causes the focus issue
+    // Just ensure focus is maintained with setTimeout
+    setTimeout(() => {
+      editor.focus();
+    }, 10);
   }
 
-  function applyStandardInputStyle(input, style) {
+  function applyStandardInputStyle(input, style, isLayer = false) {
     const start = input.selectionStart;
     const end = input.selectionEnd;
     const text = input.value;
 
     if (start === end) {
-      input.value = convertText(text, style);
+      // Transform whole text
+      if (isLayer && Array.isArray(style)) {
+        input.value = applyLayeredStyles(text, style);
+      } else if (!isLayer) {
+        input.value = convertText(text, style);
+      }
     } else {
+      // Transform selected text
       const selectedText = text.substring(start, end);
-      input.value =
-        text.substring(0, start) +
-        convertText(selectedText, style) +
-        text.substring(end);
+      let styledText;
+
+      if (isLayer && Array.isArray(style)) {
+        styledText = applyLayeredStyles(selectedText, style);
+      } else if (!isLayer) {
+        styledText = convertText(selectedText, style);
+      } else {
+        return; // No styles to apply
+      }
+
+      input.value = text.substring(0, start) + styledText + text.substring(end);
     }
 
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  function applyContentEditableStyle(element, style) {
+  function applyContentEditableStyle(element, style, isLayer = false) {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
 
@@ -213,11 +458,24 @@ function initUnicodeSuggestions() {
 
     if (!range.collapsed) {
       const selectedText = range.toString();
-      const styledText = convertText(selectedText, style);
+      let styledText;
+
+      if (isLayer && Array.isArray(style)) {
+        styledText = applyLayeredStyles(selectedText, style);
+      } else if (!isLayer) {
+        styledText = convertText(selectedText, style);
+      } else {
+        return; // No styles to apply
+      }
+
       range.deleteContents();
       range.insertNode(document.createTextNode(styledText));
     } else {
-      element.textContent = convertText(element.textContent, style);
+      if (isLayer && Array.isArray(style)) {
+        element.textContent = applyLayeredStyles(element.textContent, style);
+      } else if (!isLayer) {
+        element.textContent = convertText(element.textContent, style);
+      }
     }
 
     element.dispatchEvent(new Event("input", { bubbles: true }));
@@ -230,7 +488,7 @@ function initUnicodeSuggestions() {
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
       </svg>`;
-    btn.title = "Suggestion styles";
+    btn.title = "Viblify style";
     return btn;
   }
 
@@ -240,49 +498,383 @@ function initUnicodeSuggestions() {
     popup.innerHTML = `
       <div class="header flex justify-between items-center p-2 bg-gray-800 dark:bg-gray-900 light:bg-gray-200 rounded-t-md">
         <div class="flex items-center gap-2 text-sm font-medium">
-          <span>Suggestion Styles <span class="text-neutral-600 text-[11px]">(Ctrl+[Key])</span></span>
+          <span class="text-sm ">Suggestion Styles <br/> <span class="text-neutral-600" style="font-size:10px">(${
+            isMac() ? "Cmd" : "Ctrl"
+          }+[Key])</span></span>
         </div>
-        <button id="theme-toggle" class="cursor-pointer text-xs p-1.5 rounded hover:bg-gray-600 dark:hover:bg-gray-700 light:hover:bg-gray-200">
-          <svg class="w-4 h-4 theme-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-          </svg>
-        </button>
+        <div class="flex items-center">
+          <button id="theme-toggle" class="cursor-pointer text-xs p-1.5 rounded hover:bg-gray-600 dark:hover:bg-gray-700 light:hover:bg-gray-200">
+            <svg class="w-4 h-4 theme-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+          </button>
+        </div>
       </div>
-      <div class="suggestion-options">
-        ${STYLES.map(
-          (style) => `
-            <button data-cmd="${style.cmd}">
-              <span class="w-6">${style.char}</span> ${style.name} <span class="ml-2  opacity-70 text-neutral-600 text-[11px]">${style.shortcut}</span>
-            </button>
-          `
-        ).join("")}
+      
+      <div class="tab-navigation">
+        <button class="tab-button active" data-tab="styles">Styles</button>
+        <button class="tab-button" data-tab="currency">Currency</button>
       </div>
+      <div class="tab-content">
+        <div class="tab-pane active" data-tab-content="styles">
+          <div class="suggestion-options">
+            ${STYLES.map(
+              (style) => `
+                <button data-cmd="${style.cmd}">
+                  <span class="w-6">${style.char}</span> ${
+                style.name
+              } <span class="ml-2 opacity-70 text-neutral-600 text-[11px]">${
+                isMac() ? style.shortcut[1] : style.shortcut[0]
+              }</span>
+                  <span class="unicode-preview" data-preview-style="${
+                    style.cmd
+                  }"></span>
+                </button>
+              `
+            ).join("")}
+          </div>
+        </div>
+        <div class="tab-pane" data-tab-content="currency">
+          <div class="currency-options">
+            ${CURRENCY_CATEGORIES.map(
+              (category) => `
+              <div class="currency-category">
+                <h3 class="currency-category-title">${category.name}</h3>
+                ${category.symbols
+                  .map(
+                    (currency) => `
+                  <button data-currency="${currency.symbol}">
+                    <span class="w-6 currency-symbol">${currency.symbol}</span> ${currency.name}
+                  </button>
+                `
+                  )
+                  .join("")}
+              </div>
+            `
+            ).join("")}
+          </div>
+        </div>
     `;
+
+    // Remove layout tab logic (no layout tab)
+    // Set up tab switching
+    setTimeout(() => {
+      const tabButtons = popup.querySelectorAll(".tab-button");
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const tabName = button.getAttribute("data-tab");
+          switchTab(popup, tabName);
+        });
+      });
+      // Setup layer application buttons
+      const applyLayersBtn = popup.querySelector(".layer-apply-btn");
+      const clearLayersBtn = popup.querySelector(".layer-clear-btn");
+
+      if (applyLayersBtn) {
+        applyLayersBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const targetInput = popup.targetInput;
+          if (!targetInput) return;
+
+          const isTwitterEditor =
+            targetInput.closest('[data-testid="tweetTextarea_0"]') !== null;
+
+          // Apply all selected layers
+          applyStyle(targetInput, activeLayers, true);
+
+          // Update layer previews
+          updateLayerPreviews(popup);
+
+          // Focus the editor after applying
+          if (isTwitterEditor) {
+            setTimeout(() => targetInput.focus(), 20);
+          }
+        });
+      }
+
+      if (clearLayersBtn) {
+        clearLayersBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          // Clear all checkboxes
+          popup
+            .querySelectorAll(".style-layer-checkbox")
+            .forEach((checkbox) => {
+              checkbox.checked = false;
+            });
+
+          // Clear active layers
+          activeLayers = [];
+
+          // Update previews
+          updateLayerPreviews(popup);
+        });
+      }
+
+      // Setup layer checkbox handling
+      popup.querySelectorAll(".style-layer-checkbox").forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          const layerStyle = checkbox.getAttribute("data-layer");
+          const layerIndex = activeLayers.indexOf(layerStyle);
+
+          if (checkbox.checked && layerIndex === -1) {
+            activeLayers.push(layerStyle);
+          } else if (!checkbox.checked && layerIndex !== -1) {
+            activeLayers.splice(layerIndex, 1);
+          }
+
+          // Update layer previews
+          updateLayerPreviews(popup);
+        });
+      });
+    }, 0);
+
+    // Keyboard navigation for suggestion popup
+    popup.addEventListener("keydown", (e) => {
+      const visibleTab = popup.querySelector(".tab-pane.active");
+      const options = Array.from(visibleTab.querySelectorAll("button"));
+      if (!options.length) return;
+      let idx = options.findIndex((btn) =>
+        btn.classList.contains("highlighted")
+      );
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (idx >= 0) options[idx].classList.remove("highlighted");
+        idx = (idx + 1) % options.length;
+        options[idx].classList.add("highlighted");
+        options[idx].focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (idx >= 0) options[idx].classList.remove("highlighted");
+        idx = (idx - 1 + options.length) % options.length;
+        options[idx].classList.add("highlighted");
+        options[idx].focus();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (idx >= 0) options[idx].click();
+      }
+    });
+
     return popup;
   }
 
-  function positionPopup(popup, btn) {
+  // Function to update layer previews
+  function updateLayerPreviews(popup) {
+    const sampleText = previewText || "Abc";
+
+    // Update individual layer previews
+    popup.querySelectorAll("[data-layer-preview]").forEach((preview) => {
+      const layerStyle = preview.getAttribute("data-layer-preview");
+      preview.textContent = convertText(sampleText, layerStyle);
+    });
+
+    // If we have active layers, show a combined preview somewhere
+    if (activeLayers.length > 0) {
+      const combinedPreview = applyLayeredStyles(sampleText, activeLayers);
+      // You can add a specific combined preview element if desired
+      // Or just update something like a status text
+    }
+  }
+
+  // Function to switch between tabs
+  function switchTab(popup, tabName) {
+    activeTab = tabName;
+
+    // Update tab buttons
+    const tabButtons = popup.querySelectorAll(".tab-button");
+    tabButtons.forEach((button) => {
+      if (button.getAttribute("data-tab") === tabName) {
+        button.classList.add("active");
+      } else {
+        button.classList.remove("active");
+      }
+    });
+
+    // Update tab content
+    const tabPanes = popup.querySelectorAll(".tab-pane");
+    tabPanes.forEach((pane) => {
+      if (pane.getAttribute("data-tab-content") === tabName) {
+        pane.classList.add("active");
+      } else {
+        pane.classList.remove("active");
+      }
+    });
+
+    // Update previews for specific tabs
+    if (tabName === "layers") {
+      updateLayerPreviews(popup);
+    }
+  }
+
+  // Enhanced smart positioning that avoids UI elements
+  function smartPositionPopup(popup, btn, targetInput) {
     const btnRect = btn.getBoundingClientRect();
     const popupRect = popup.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
+    // Start with default position (above the button)
     let top = btnRect.top - popupRect.height - 8;
     let left = btnRect.right - popupRect.width;
 
-    if (top < 3) {
+    // Check if there are important UI elements to avoid
+    const uiElements = detectImportantUIElements();
+
+    // Optimize initial position based on viewport
+    // If button is too close to the top, position below
+    if (top < 10) {
       top = btnRect.bottom + 8;
     }
 
-    if (left < 0) {
-      left = btnRect.left;
+    // Don't let popup go off-screen horizontally
+    if (left < 10) {
+      left = 10;
+    } else if (left + popupRect.width > viewportWidth - 10) {
+      left = viewportWidth - popupRect.width - 10;
     }
 
-    if (left + popupRect.width > window.innerWidth) {
-      left = window.innerWidth - popupRect.width - 8;
+    // Check if popup would overlap with important UI elements
+    const popupBox = {
+      top,
+      left,
+      right: left + popupRect.width,
+      bottom: top + popupRect.height,
+    };
+
+    // Try to avoid overlaps with important UI
+    for (const element of uiElements) {
+      if (boxesOverlap(popupBox, element)) {
+        // Try positioning to different sides
+        const positions = [
+          { top: btnRect.bottom + 8, left }, // Bottom
+          { top: btnRect.top - popupRect.height - 8, left }, // Top
+          { top: btnRect.top, left: btnRect.right + 8 }, // Right
+          { top: btnRect.top, left: btnRect.left - popupRect.width - 8 }, // Left
+        ];
+
+        // Find first position that doesn't overlap
+        for (const pos of positions) {
+          const testBox = {
+            top: pos.top,
+            left: pos.left,
+            right: pos.left + popupRect.width,
+            bottom: pos.top + popupRect.height,
+          };
+
+          if (
+            !uiElements.some((el) => boxesOverlap(testBox, el)) &&
+            isWithinViewport(testBox, viewportWidth, viewportHeight)
+          ) {
+            top = pos.top;
+            left = pos.left;
+            break;
+          }
+        }
+
+        break;
+      }
     }
 
+    // Apply final position
     popup.style.position = "fixed";
     popup.style.left = `${left}px`;
     popup.style.top = `${top}px`;
+
+    // Track the input element to enable applying styles later
+    popup.targetInput = targetInput;
+  }
+
+  // Helper function to detect if a position is within viewport
+  function isWithinViewport(box, viewportWidth, viewportHeight) {
+    return (
+      box.top >= 0 &&
+      box.left >= 0 &&
+      box.right <= viewportWidth &&
+      box.bottom <= viewportHeight
+    );
+  }
+
+  // Helper function to check if two boxes overlap
+  function boxesOverlap(box1, box2) {
+    return !(
+      box1.right < box2.left ||
+      box1.left > box2.right ||
+      box1.bottom < box2.top ||
+      box1.top > box2.bottom
+    );
+  }
+
+  // Detect important UI elements to avoid overlapping
+  function detectImportantUIElements() {
+    const elements = [];
+    const currentUrl = window.location.href;
+
+    // Social media specific elements to avoid
+    if (currentUrl.includes("twitter.com") || currentUrl.includes("x.com")) {
+      // Twitter navigation bar and sidebar
+      document
+        .querySelectorAll('header[role="banner"], nav[role="navigation"]')
+        .forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            elements.push({
+              top: rect.top,
+              left: rect.left,
+              right: rect.right,
+              bottom: rect.bottom,
+            });
+          }
+        });
+    } else if (currentUrl.includes("facebook.com")) {
+      // Facebook header and sidebars
+      document
+        .querySelectorAll('div[role="banner"], div[data-pagelet="LeftRail"]')
+        .forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            elements.push({
+              top: rect.top,
+              left: rect.left,
+              right: rect.right,
+              bottom: rect.bottom,
+            });
+          }
+        });
+    } else if (currentUrl.includes("linkedin.com")) {
+      // LinkedIn header and sidebars
+      document.querySelectorAll("header, aside").forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          elements.push({
+            top: rect.top,
+            left: rect.left,
+            right: rect.right,
+            bottom: rect.bottom,
+          });
+        }
+      });
+    }
+
+    // Generic fixed elements check - likely navigation or important UI
+    document.querySelectorAll("*").forEach((el) => {
+      if (
+        window.getComputedStyle(el).position === "fixed" &&
+        el.className &&
+        !el.className.includes("unicode-")
+      ) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 100 && rect.height > 30) {
+          // Minimum size to consider
+          elements.push({
+            top: rect.top,
+            left: rect.left,
+            right: rect.right,
+            bottom: rect.bottom,
+          });
+        }
+      }
+    });
+
+    return elements;
   }
 
   function isTextInputElement(element) {
@@ -338,14 +930,6 @@ function initUnicodeSuggestions() {
 
     const isEditable =
       isStandardTextInput || isContenteditable || isSocialMediaEditor;
-    // console.debug(
-    //   "Checking element:",
-    //   element,
-    //   "Is editable?",
-    //   isEditable,
-    //   "Is search?",
-    //   isSearchInput
-    // );
 
     return isEditable && !isSearchInput;
   }
@@ -358,15 +942,10 @@ function initUnicodeSuggestions() {
 
   function findDeepEditor(element) {
     if (!element || !(element instanceof HTMLElement)) {
-      // console.debug("findDeepEditor: Invalid element", element);
       return null;
     }
 
     if (!isTextInputElement(element)) {
-      // console.debug(
-      //   "findDeepEditor: Element is not a valid text input",
-      //   element
-      // );
       return null;
     }
 
@@ -377,7 +956,6 @@ function initUnicodeSuggestions() {
       twitterEditor &&
       twitterEditor.getAttribute("contenteditable") === "true"
     ) {
-      // console.debug("findDeepEditor: Found Twitter editor", twitterEditor);
       return twitterEditor;
     }
 
@@ -409,10 +987,6 @@ function initUnicodeSuggestions() {
 
     const targetInput = findDeepEditor(input);
     if (!targetInput) {
-      // console.debug(
-      //   "setupInputElement: No valid target input found for",
-      //   input
-      // );
       return;
     }
 
@@ -428,6 +1002,10 @@ function initUnicodeSuggestions() {
     container.appendChild(btn);
     document.body.appendChild(popup);
 
+    // Check if this is a Twitter editor for special handling
+    const isTwitterEditor =
+      targetInput.closest('[data-testid="tweetTextarea_0"]') !== null;
+
     let timeoutId, idleTimeoutId;
 
     const checkInput = () => {
@@ -437,6 +1015,13 @@ function initUnicodeSuggestions() {
         return;
       }
       const text = targetInput.value || targetInput.textContent || "";
+
+      // Update preview text from current content
+      previewText = text.length > 0 ? text.substring(0, 3) : "Abc";
+
+      // Update all preview spans with the current text
+      updatePreviews(popup, previewText);
+
       if (text.length >= 3) {
         btn.classList.remove("hidden");
       } else {
@@ -444,6 +1029,18 @@ function initUnicodeSuggestions() {
         popup.classList.add("hidden");
       }
     };
+
+    // Function to update all preview elements
+    function updatePreviews(popupEl, text) {
+      const previewElements = popupEl.querySelectorAll("[data-preview-style]");
+      previewElements.forEach((el) => {
+        const styleType = el.getAttribute("data-preview-style");
+        el.textContent = convertText(text, styleType);
+      });
+
+      // Also update layer previews if present
+      updateLayerPreviews(popupEl);
+    }
 
     const resetIdleTimer = () => {
       clearTimeout(idleTimeoutId);
@@ -456,14 +1053,45 @@ function initUnicodeSuggestions() {
       }
     };
 
+    const hideActivePopup = () => {
+      if (activePopup && activePopup !== popup) {
+        activePopup.classList.add("hidden");
+        activePopup.classList.remove("scale-100", "opacity-100");
+        activePopup.classList.add("scale-95", "opacity-0");
+      }
+      activePopup = popup;
+    };
+
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+      hideActivePopup();
+
       popup.classList.toggle("hidden");
       if (!popup.classList.contains("hidden")) {
-        positionPopup(popup, btn);
+        // Use smart positioning
+        smartPositionPopup(popup, btn, targetInput);
         popup.classList.remove("scale-95", "opacity-0");
         popup.classList.add("scale-100", "opacity-100");
+
+        // Get the current selection or first few chars
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && selection.toString().length > 0) {
+          previewText = selection.toString().substring(0, 3);
+        } else {
+          const text = targetInput.value || targetInput.textContent || "";
+          previewText = text.length > 0 ? text.substring(0, 3) : "Abc";
+        }
+
+        // Update all previews
+        updatePreviews(popup, previewText);
+
+        // Sync layer checkboxes with active layers
+        popup.querySelectorAll(".style-layer-checkbox").forEach((checkbox) => {
+          const layerStyle = checkbox.getAttribute("data-layer");
+          checkbox.checked = activeLayers.includes(layerStyle);
+        });
+
         resetIdleTimer();
       } else {
         popup.classList.remove("scale-100", "opacity-100");
@@ -484,26 +1112,96 @@ function initUnicodeSuggestions() {
       }
     });
 
-    popup.querySelectorAll(".suggestion-options button").forEach((option) => {
-      option.addEventListener("click", (e) => {
-        e.preventDefault();
-        const cmd = option.getAttribute("data-cmd");
-        if (cmd) {
-          // console.debug("Applying style", cmd, "to", targetInput);
-          applyStyle(targetInput, cmd);
-        }
-        popup.classList.add("hidden");
+    // Add hover preview effects and click handling
+    popup
+      .querySelectorAll(".suggestion-options button, .currency-options button")
+      .forEach((option) => {
+        // Add hover effects with preview changes
+        option.addEventListener("mouseenter", () => {
+          const previewEl = option.querySelector(".unicode-preview");
+          if (previewEl) {
+            previewEl.classList.add("highlighted");
+          }
+        });
+
+        option.addEventListener("mouseleave", () => {
+          const previewEl = option.querySelector(".unicode-preview");
+          if (previewEl) {
+            previewEl.classList.remove("highlighted");
+          }
+        });
+
+        // Handle style/currency application
+        option.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Focus the input first before applying style
+          if (isTwitterEditor) {
+            targetInput.focus();
+          }
+
+          const cmd = option.getAttribute("data-cmd");
+          const currencySymbol = option.getAttribute("data-currency");
+
+          if (cmd) {
+            if (isTwitterEditor) {
+              // Special handling for Twitter
+              const twitterEditor = targetInput.closest(
+                '[data-testid="tweetTextarea_0"]'
+              );
+              if (twitterEditor) {
+                // Use setTimeout to ensure focus is maintained
+                setTimeout(() => {
+                  applyTwitterStyle(twitterEditor, cmd);
+                }, 10);
+              }
+            } else {
+              applyStyle(targetInput, cmd);
+            }
+          } else if (currencySymbol) {
+            // Insert currency symbol
+            insertTextAtCursor(targetInput, currencySymbol);
+          }
+
+          // Only hide popup for non-Twitter editors or currency insertions
+          if (!isTwitterEditor || currencySymbol) {
+            popup.classList.add("hidden");
+          }
+
+          // Ensure focus is maintained for Twitter
+          if (isTwitterEditor) {
+            setTimeout(() => {
+              targetInput.focus();
+            }, 20);
+          }
+        });
       });
-    });
 
     targetInput.addEventListener("keydown", (e) => {
       STYLES.forEach((style) => {
-        if (style.shortcut === `Ctrl+${e.key.toUpperCase()}` && e.ctrlKey) {
+        const key = style.shortcut[0].split("+")[1]; // Get the key part (B, I, S, etc.)
+        if (
+          key === e.key.toUpperCase() &&
+          ((isMac() && e.metaKey) || (!isMac() && e.ctrlKey)) &&
+          !e.altKey &&
+          !e.shiftKey
+        ) {
+          // Prevent default browser behavior (especially for Ctrl+D which selects the address bar)
           e.preventDefault();
-          // console.debug(
-          //   `Shortcut ${style.shortcut} triggered for ${style.cmd}`
-          // );
-          applyStyle(targetInput, style.cmd);
+          e.stopPropagation();
+
+          // Apply the style
+          if (isTwitterEditor) {
+            const twitterEditor = targetInput.closest(
+              '[data-testid="tweetTextarea_0"]'
+            );
+            if (twitterEditor) {
+              applyTwitterStyle(twitterEditor, style.cmd);
+            }
+          } else {
+            applyStyle(targetInput, style.cmd);
+          }
         }
       });
     });
@@ -543,6 +1241,35 @@ function initUnicodeSuggestions() {
     });
 
     checkInput();
+  }
+
+  // Add function to insert text at cursor position
+  function insertTextAtCursor(input, text) {
+    if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
+      const start = input.selectionStart || 0;
+      const end = input.selectionEnd || 0;
+      input.value =
+        input.value.substring(0, start) + text + input.value.substring(end);
+
+      // Set selection after insertion
+      input.selectionStart = input.selectionEnd = start + text.length;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    } else if (input.isContentEditable) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+
+      // Move cursor after insertion
+      range.setStart(range.endContainer, range.endOffset);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
   }
 
   function setupDeepDetection() {

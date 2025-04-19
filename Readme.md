@@ -132,4 +132,4 @@ Have questions or ideas?
 
 ---
 
-**Disclaimer:** This extension is not affiliated with or endorsed by any social media platform. Use at your own risk. Always check the latest privacy policies of the platforms you use.
+**Disclaimer:** This extension is not affiliated with or endorsed by any social media platform. Use at your own risk. Always check the latest privacy policies of the platforms you ue.

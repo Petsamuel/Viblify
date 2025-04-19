@@ -466,6 +466,35 @@
       z: "z",
     },
   };
+  
+  // Common currency symbols
+  const currencySymbols = {
+    usd: "$",
+    eur: "€",
+    gbp: "£",
+    jpy: "¥",
+    cny: "¥",
+    inr: "₹",
+    rub: "₽",
+    krw: "₩",
+    btc: "₿",
+    baht: "฿",
+    ngn: "₦",
+    peso: "₱",
+    brazil: "R$",
+    won: "₩",
+    lira: "₺",
+    bitcoin: "₿",
+    cent: "¢",
+    dollar: "$",
+    euro: "€",
+    pound: "£",
+    yen: "¥",
+    rupee: "₹",
+    ruble: "₽",
+    genericCurrency: "¤"
+  };
+
   // Sample text for each style
   const sampleText = {
     bold: "𝗕𝗼𝗹𝗱 𝗧𝗲𝘅𝘁",
@@ -482,6 +511,7 @@
   // Expose to global scope under one namespace
   window.UnicodeStyler = {
     styleMaps,
+    currencySymbols,
     sampleText,
   };
 })();

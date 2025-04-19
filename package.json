@@ -4,7 +4,7 @@
   "main": "background.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tw": "npx @tailwindcss/cli -i ./assets/input.css -o ./popup.css --minify --watch",
+    "tw": "npx @tailwindcss/cli -i ./assets/css/input.css -o ./popup.css --minify --watch",
     "build": "node build.js --no-cache --watch"
   },
   "keywords": [],
